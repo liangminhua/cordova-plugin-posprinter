@@ -1,7 +1,7 @@
 /********* PosPrinter.m Cordova Plugin Implementation *******/
 
 #import <Cordova/CDV.h>
-
+#import <XYSDK.h>
 @interface PosPrinter : CDVPlugin {
   // Member variables go here.
 }
@@ -24,5 +24,22 @@
 
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
-
+-(void)scanBluetoothDevice:(CDVInvokedUrlCommand*)command{
+CDVPluginResult* pluginResult = nil;
+}
+- (void)connectUsb:(CDVInvokedUrlCommand*)command{
+CDVPluginResult* pluginResult = nil;
+}
+- (void)connectBluetooth:(CDVInvokedUrlCommand*)command{
+    CDVPluginResult* pluginResult = nil;
+}
+- (void)connectNet:(CDVInvokedUrlCommand*)command{
+    CDVPluginResult* pluginResult = nil;
+}
+- (void)write:(CDVInvokedUrlCommand*)command{
+    CDVPluginResult* pluginResult = nil;
+}
+- (void)read:(CDVInvokedUrlCommand*)command{
+    CDVPluginResult* pluginResult = nil;
+}
 @end

@@ -1,2 +1,51 @@
 <?xml version='1.0' encoding='utf-8'?>
-<plugin id="cordova-plugin-posprinter" version="1.0.0" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android"><name>PosPrinter</name><js-module name="PosPrinter" src="www/PosPrinter.js"><clobbers target="cordova.plugins.PosPrinter" /></js-module><platform name="ios"><config-file parent="/*" target="config.xml"><feature name="PosPrinter"><param name="ios-package" value="PosPrinter" /></feature></config-file><source-file src="src/ios/PosPrinter.m" /></platform></plugin>
+<plugin id="cordova-plugin-posprinter" version="1.0.0" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
+  <name>PosPrinter</name>
+  <js-module name="PosPrinter" src="www/PosPrinter.js">
+    <clobbers target="PosPrinter" />
+  </js-module>
+  <platform name="ios">
+    <config-file parent="/*" target="config.xml">
+      <feature name="PosPrinter">
+        <param name="ios-package" value="PosPrinter" />
+      </feature>
+    </config-file>
+    <source-file src="src/ios/PosPrinter.m" />
+    <header-file src="src/ios/BLEManager.h"/>
+    <header-file src="src/ios/XYBLEManager.h"/>
+    <header-file src="src/ios/XYWIFIManager.h"/>
+    <header-file src="src/ios/XYSDK.h"/>
+    <source-file src="src/ios/libXYPrinter.a" framework="true"></source-file>
+    <framework src="SystemConfiguration.framework"></framework>
+    <framework src="CFNetwork.framework"></framework>
+    <framework src="CoreBluetooth.framework"></framework>
+  </platform>
+  <platform name="android">
+    <config-file parent="/*" target="res/xml/config.xml">
+      <feature name="PosPrinter">
+        <param name="android-package" value="cordova.plugin.posprinter.PosPrinter" />
+      </feature>
+    </config-file>
+    <config-file parent="/manifest/application" target="AndroidManifest.xml">
+      <service android:name="net.posprinter.service.PosprinterService"></service>
+    </config-file>
+    <config-file parent="/*" target="AndroidManifest.xml">
+      <uses-permission android:name="android.hardware.usb.UsbAccessory" />
+      <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+      <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+      <uses-permission android:name="android.permission.BLUETOOTH"/>
+      <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+      <uses-permission android:name="android.permission.BLUETOOTH_PRIVILEGED"/>
+      <uses-permission android:name="android.permission.INTERNET"/>
+      <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+      <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE"/>
+      <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+      <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+      <uses-feature android:required="true" android:name="android.hardware.usb.host" />
+    </config-file>
+    <config-file parent="/*" target="AndroidManifest.xml"></config-file>
+    <source-file src="src/android/PosPrinter.java" target-dir="src/cordova/plugin/posprinter" />
+    <source-file src="src/android/Constant.java" target-dir="src/cordova/plugin/posprinter" />
+    <source-file src="src/android/posprinterconnectandsendsdk.jar" target-dir="libs" />
+  </platform>
+</plugin>
