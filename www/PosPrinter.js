@@ -1,5 +1,7 @@
 var exec = require('cordova/exec');
-
+exports.initService = function (arg0, success, error) {
+    exec(success, error, "PosPrinter", "initService", []);
+};
 exports.scanBluetoothDevice = function(arg0, success, error) {
     exec(success, error, "PosPrinter", "scanBluetoothDevice", []);
 };
@@ -11,6 +13,9 @@ exports.connectBluetooth = function(arg0, success, error) {
 };
 exports.connectNet = function(arg0, success, error) {
     exec(success, error, "PosPrinter", "connectNet", [arg0]);
+};
+exports.disconnect = function(arg0, success, error) {
+    exec(success, error, "PosPrinter", "disconnect", []);
 };
 exports.write = function(arg0, success, error) {
     exec(success, error, "PosPrinter", "write", arg0);
