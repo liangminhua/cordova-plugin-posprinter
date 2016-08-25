@@ -1,5 +1,7 @@
 package cordova.plugin.posprinter;
-
+/**
+ * Created by BEN on 2016/8/25.
+ */
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -10,7 +12,6 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Build;
 import android.os.IBinder;
-import android.util.Base64;
 import android.util.Log;
 
 import net.posprinter.posprinterface.IMyBinder;
@@ -24,6 +25,8 @@ import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.Arrays;
 
 /**
  * This class echoes a string called from JavaScript.
@@ -54,7 +57,6 @@ public class PosPrinter extends CordovaPlugin {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 addProperty(callbackJsonObject, Constant.DEVICE_NAME, device.getName());
                 addProperty(callbackJsonObject, Constant.DEVICE_BLUETOOTH_ADDRESS, device.getAddress());
-
                 addProperty(callbackJsonObject, Constant.BOND_STATE, device.getBondState());
                 sendUpdate(scanCallback, callbackJsonObject);
                 // Logs
@@ -68,7 +70,10 @@ public class PosPrinter extends CordovaPlugin {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        cordova.getActivity().unregisterReceiver(bluetoothReceiver);
+        if (bluetoothAdapter != null)
+            cordova.getActivity().unregisterReceiver(bluetoothReceiver);
+        if (conn != null)
+            cordova.getActivity().unbindService(conn);
     }
 
     @Override
@@ -78,7 +83,7 @@ public class PosPrinter extends CordovaPlugin {
             return true;
         }
         if (action.equals("scanBluetoothDevice")) {
-            scanBlueboothDevice(callbackContext);
+            scanBluetoothDevice(callbackContext);
             return true;
         }
         if (action.equals("connectUsb")) {
@@ -93,7 +98,7 @@ public class PosPrinter extends CordovaPlugin {
         }
         if (action.equals("connectNet")) {
             String ip = args.getString(0);
-            int port = args.getInt(1);
+            int port = args.optInt(1, 9100);
             connectNet(ip, port, callbackContext);
             return true;
         }
@@ -133,7 +138,21 @@ public class PosPrinter extends CordovaPlugin {
         binder.connectUsbPort(cordova.getActivity().getApplicationContext(), usbPathName, new UiExecute() {
             @Override
             public void onsucess() {
-                callbackContext.success();
+                isConnect = true;
+                final PluginResult pluginResult = new PluginResult(PluginResult.Status.OK);
+                pluginResult.setKeepCallback(true);
+                callbackContext.sendPluginResult(pluginResult);
+                binder.acceptdatafromprinter(new UiExecute() {
+                    @Override
+                    public void onsucess() {
+                    }
+
+                    @Override
+                    public void onfailed() {
+                        isConnect = false;
+                        callbackContext.error(Constant.USB_DISCONNECT);
+                    }
+                });
             }
 
             @Override
@@ -145,24 +164,58 @@ public class PosPrinter extends CordovaPlugin {
     }
 
     private void connectBluetooth(String bluetoothAddress, final CallbackContext callbackContext) {
-        binder.connectBtPort(bluetoothAddress, new UiExecute() {
-            @Override
-            public void onsucess() {
-                callbackContext.success();
-            }
+        if (!bluetoothAdapter.isEnabled())
+            bluetoothAdapter.enable();
+        if (bluetoothAdapter.isEnabled()) {
+            binder.connectBtPort(bluetoothAddress, new UiExecute() {
+                @Override
+                public void onsucess() {
+                    isConnect = true;
+                    final PluginResult pluginResult = new PluginResult(PluginResult.Status.OK);
+                    pluginResult.setKeepCallback(true);
+                    callbackContext.sendPluginResult(pluginResult);
+                    binder.acceptdatafromprinter(new UiExecute() {
+                        @Override
+                        public void onsucess() {
+                        }
 
-            @Override
-            public void onfailed() {
-                callbackContext.error(Constant.BLUETOOTH_CONNECT_FAIL);
-            }
-        });
+                        @Override
+                        public void onfailed() {
+                            callbackContext.error(Constant.BLUETOOTH_DISCONNECT);
+                        }
+                    });
+                }
+
+                @Override
+                public void onfailed() {
+                    isConnect = false;
+                    callbackContext.error(Constant.BLUETOOTH_CONNECT_FAIL);
+                }
+            });
+        } else {
+            callbackContext.error(Constant.REQUEST_ENABLE_BT_FAIL);
+        }
     }
 
     private void connectNet(String ipAddress, int port, final CallbackContext callbackContext) {
         binder.connectNetPort(ipAddress, port, new UiExecute() {
             @Override
             public void onsucess() {
-                callbackContext.success();
+                isConnect = true;
+                final PluginResult pluginResult = new PluginResult(PluginResult.Status.OK);
+                pluginResult.setKeepCallback(true);
+                callbackContext.sendPluginResult(pluginResult);
+                binder.acceptdatafromprinter(new UiExecute() {
+                    @Override
+                    public void onsucess() {
+                    }
+
+                    @Override
+                    public void onfailed() {
+                        isConnect = false;
+                        callbackContext.error(Constant.NET_DISCONNECT);
+                    }
+                });
             }
 
             @Override
@@ -173,51 +226,62 @@ public class PosPrinter extends CordovaPlugin {
     }
 
     private void disconnectCurrentPort(final CallbackContext callbackContext) {
-        binder.disconnectCurrentPort(new UiExecute() {
-            @Override
-            public void onsucess() {
-                callbackContext.success();
-            }
+        if (isConnect) {
+            binder.disconnectCurrentPort(new UiExecute() {
+                @Override
+                public void onsucess() {
+                    callbackContext.success();
+                }
 
-            @Override
-            public void onfailed() {
-                callbackContext.error(Constant.DISCOVERY_ERROR);
-            }
-        });
+                @Override
+                public void onfailed() {
+                    callbackContext.error(Constant.DISCONNECT_ERROR);
+                }
+            });
+        } else {
+            callbackContext.error(Constant.NOT_CONNECT);
+        }
+
     }
 
     private void write(byte[] data, final CallbackContext callbackContext) {
+        if (isConnect) {
+            binder.write(data, new UiExecute() {
+                @Override
+                public void onsucess() {
+                    callbackContext.success();
+                }
 
-        binder.write(data, new UiExecute() {
-            @Override
-            public void onsucess() {
-                callbackContext.success();
-            }
-
-            @Override
-            public void onfailed() {
-                callbackContext.error(Constant.WRITE_FAIL);
-            }
-        });
+                @Override
+                public void onfailed() {
+                    callbackContext.error(Constant.WRITE_FAIL);
+                }
+            });
+        } else {
+            callbackContext.error(Constant.NOT_CONNECT);
+        }
     }
 
     private void read(CallbackContext callbackContext) {
         RoundQueue<byte[]> readBuffer = binder.readBuffer();
-
+        byte[] data = readBuffer.getLast();
+        String res = Arrays.toString(data);
+        Log.i("PosPrinter", "data=" + res);
+        callbackContext.success(res);
     }
 
-    private void scanBlueboothDevice(CallbackContext callbackContext) {
+    private void scanBluetoothDevice(CallbackContext callbackContext) {
         scanCallback = callbackContext;
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (!bluetoothAdapter.isEnabled()) {
             Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             cordova.getActivity().startActivityForResult(intent, Constant.REQUEST_ENABLE_BT);
         } else {
-            findAvalibleDevice();
+            findAvailableDevice();
         }
     }
 
-    private void findAvalibleDevice() {
+    private void findAvailableDevice() {
         if (scanCallback == null) {
             return;
         }
@@ -235,7 +299,7 @@ public class PosPrinter extends CordovaPlugin {
         // Enable Bluetooth Callback
         if (Constant.REQUEST_ENABLE_BT == requestCode) {
             if (resultCode == Constant.RESULT_OK) {
-                findAvalibleDevice();
+                findAvailableDevice();
             } else {
                 scanCallback.error(Constant.REQUEST_ENABLE_BT_FAIL);
             }
@@ -265,13 +329,8 @@ public class PosPrinter extends CordovaPlugin {
                 obj.put(key, value);
             }
         } catch (JSONException e) {
-            Log.e("PosPrinter",e.getMessage());
+            Log.e("PosPrinter", e.getMessage());
         }
     }
 
-    private void addPropertyBytes(JSONObject obj, String key, byte[] bytes) {
-        String string = Base64.encodeToString(bytes, Base64.NO_WRAP);
-
-        addProperty(obj, key, string);
-    }
 }
