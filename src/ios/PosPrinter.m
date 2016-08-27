@@ -6,9 +6,14 @@
     // Member variables go here.
     XYBLEManager*  bluetoothManager;
     XYWIFIManager* wifiManager;
+    NSString* scanCallback;
 }
-
-- (void)coolMethod:(CDVInvokedUrlCommand*)command;
+-(void) initService:(CDVInvokedUrlCommand*)command;
+-(void) scanBluetoothDevice:(CDVInvokedUrlCommand*)command;
+-(void) connectBluetooth:(CDVInvokedUrlCommand*)command;
+-(void) connectNet:(CDVInvokedUrlCommand*)command;
+-(void) disconnect:(CDVInvokedUrlCommand*)command;
+-(void) write:(CDVInvokedUrlCommand*)command;
 @end
 
 @implementation PosPrinter
@@ -46,25 +51,37 @@
     
 }
 
--(void)scanBluetoothDevice:(CDVInvokedUrlCommand*)command{
-    CDVPluginResult* pluginResult = nil;
+-(void)initService:(CDVInvokedUrlCommand*)command{
     bluetoothManager =[XYBLEManager sharedInstance];
+    wifiManager =[XYWIFIManager shareWifiManager];
     bluetoothManager.delegate =self;
+    wifiManager.delegate= self;
+    CDVPluginResult pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [pluginResult setKeepCallbackAsBool:false];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+-(void)scanBluetoothDevice:(CDVInvokedUrlCommand*)command{
+    scanCallback =command.callbackId;
     [bluetoothManager XYstartScan];
+        CDVPluginResult pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+        [pluginResult setKeepCallbackAsBool:true];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
 - (void)connectBluetooth:(CDVInvokedUrlCommand*)command{
-    CDVPluginResult* pluginResult = nil;
-    bluetoothManager =[XYBLEManager sharedInstance];
-    bluetoothManager.delegate =self;
+    NSString* bluetoothAddress=[command.arguments objectAtIndex:0];
+    if(bluetoothManager!=nil){
+
+    }else{
+    
+    }
 }
 - (void)connectNet:(CDVInvokedUrlCommand*)command{
-    __block CDVPluginResult* pluginResult = nil;
     NSString* ipAddress=[command.arguments objectAtIndex:0];
     NSNumber* port= [command.arguments objectAtIndex:1];
-    wifiManager =[XYWIFIManager shareWifiManager];
-    wifiManager.delegate= self;
     [wifiManager XYConnectWithHost:ipAddress port:port.intValue completion:^(BOOL isConnect){
+    CDVPluginResult* pluginResult = nil;
         if (isConnect) {
             pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
         }else{
@@ -74,12 +91,12 @@
     }];
 }
 -(void)disconnect:(CDVInvokedUrlCommand*)command{
-    CDVPluginResult* pluginResult =nil;
-    if (bluetoothManager==nil) {
-        return;
-    }
+NSNumber* disconnectType=[command.arguments objectAtIndex0];
     [bluetoothManager XYdisconnectRootPeripheral];
     [wifiManager XYDisConnect];
+    CDVPluginResult* pluginResult =[CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [pluginResult setKeepCallbackAsBool:false];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 - (void)write:(CDVInvokedUrlCommand*)command{
     CDVPluginResult* pluginResult = nil;

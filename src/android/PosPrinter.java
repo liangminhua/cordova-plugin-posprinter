@@ -45,7 +45,7 @@ public class PosPrinter extends CordovaPlugin {
         }
     };
 
-    BluetoothAdapter bluetoothAdapter = null;
+    BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();;
     CallbackContext scanCallback = null;
     BroadcastReceiver bluetoothReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
@@ -272,7 +272,6 @@ public class PosPrinter extends CordovaPlugin {
 
     private void scanBluetoothDevice(CallbackContext callbackContext) {
         scanCallback = callbackContext;
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (!bluetoothAdapter.isEnabled()) {
             Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             cordova.getActivity().startActivityForResult(intent, Constant.REQUEST_ENABLE_BT);
