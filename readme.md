@@ -1,3 +1,6 @@
+## PosPrinter ##
+   使用ESC/TSC命令在POS打印机上打印
+
 ## Methods ##
 * [PosProinter.initService](#initService)
 * [PosProinter.scanBluetoothDevice](#scanBluetoothDevice)
@@ -9,8 +12,6 @@
 * [PosProinter.read](#read)
 
 ## Errors ##
-
-## API Reference ##
     NOT_CONNECT = -1; 没有连接设备
     DISCOVERY_ERROR = 1;  扫描蓝牙设备错误
     DISCONNECT_ERROR = 2; 断开连接错误
@@ -22,6 +23,8 @@
     BLUETOOTH_DISCONNECT = 8; 蓝牙打印机断开
     USB_DISCONNECT = 9; USB打印机断开
     NET_DISCONNECT = 10; 网络打印机断开
+
+## API Reference ##
 
 ### initService ###
 初始化服务。必须先初始化，才能调用其他函数接口。
