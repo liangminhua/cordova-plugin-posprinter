@@ -3,14 +3,14 @@
 
 ## Methods ##
 * [PosProinter.initialize](#initialize)
-* [PosProinter.getBluetoothState](#getBluetoothState)
-* [PosProinter.enableBluetooth](#enableBluetooth)
-* [PosProinter.disableBluetooth](#disableBluetooth)
-* [PosProinter.scanBluetoothDevice](#scanBluetoothDevice)
-* [PosProinter.connectUsb](#connectUsb)
-* [PosProinter.connectBluetooth](#connectBluetooth)
-* [PosProinter.connectNet](#connectNet)
-* [PosProinter.disconnect](#disconnect)
+* [PosProinter.getBluetoothState](#getbluetoothstate)
+* [PosProinter.enableBluetooth](#enablebluetooth)
+* [PosProinter.disableBluetooth](#disablebluetooth)
+* [PosProinter.scanBluetoothDevice](#scanbluetoothdevice)
+* [PosProinter.connectUsb](#connectusb)
+* [PosProinter.connectBluetooth](#connectbluetooth)
+* [PosProinter.connectNet](#connectnet)
+* [PosProinter.disconnectCurrentPort](#disconnectcurrentport)
 * [PosProinter.write](#write)
 * [PosProinter.read](#read)
 
