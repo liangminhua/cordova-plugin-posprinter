@@ -35,7 +35,7 @@
 必须先初始化，才能调用其他函数接口。
 
 ```javascript
-PosProinter.initService(Success,Error);
+PosProinter.initialize(Success,Error);
 ```
 ### getBluetoothState ###
 获取蓝牙设备的状态。
