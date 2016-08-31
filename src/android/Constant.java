@@ -17,11 +17,13 @@ public class Constant {
     public static final int DISCOVERY_ERROR = 1;
     public static final int DISCONNECT_ERROR = 2;
     public static final int BLUETOOTH_CONNECT_FAIL = 3;
-    public static final int WRITE_FAIL = 6;
     public static final int USB_CONNECT_FAIL = 4;
-    public static final int REQUEST_ENABLE_BT_FAIL = 7;
     public static final int NET_CONNECT_FAIL = 5;
+    public static final int WRITE_FAIL = 6;
+    public static final int REQUEST_ENABLE_BT_FAIL = 7;
     public static final int BLUETOOTH_DISCONNECT = 8;
     public static final int USB_DISCONNECT = 9;
     public static final int NET_DISCONNECT = 10;
+    public static final int DISABLE_BLUETOOTH_FAIL = 11;
+    public static final int SCAN_BLUETOOTHDEVICE_FAIL = 12;
 }
