@@ -292,7 +292,7 @@ public class PosPrinter extends CordovaPlugin {
 
         @Override
         public void onfailed() {
-          callbackContext.error(Constant.DISCONNECT_ERROR);
+          callbackContext.error(Constant.DISCONNECT_FAIL);
         }
       });
     } else {

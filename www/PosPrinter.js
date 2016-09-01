@@ -20,8 +20,8 @@ exports.connectUsb = function (arg0, success, error) {
 exports.connectBluetooth = function (arg0, success, error) {
     exec(success, error, "PosPrinter", "connectBluetooth", [arg0]);
 };
-exports.connectNet = function (arg0,arg1, success, error) {
-    exec(success, error, "PosPrinter", "connectNet", [arg0,arg1]);
+exports.connectNet = function (arg0, arg1, success, error) {
+    exec(success, error, "PosPrinter", "connectNet", [arg0, arg1]);
 };
 exports.disconnectCurrentPort = function (success, error) {
     exec(success, error, "PosPrinter", "disconnectCurrentPort", []);
@@ -34,14 +34,13 @@ exports.read = function (success, error) {
 };
 
 // error_code
-var NOT_CONNECT = -1;
-var DISCOVERY_ERROR = 1;
-var DISCONNECT_ERROR = 2;
+var NOT_CONNECT = 1;
+var DISCONNECT_FAIL = 2;
 var BLUETOOTH_CONNECT_FAIL = 3;
-var WRITE_FAIL = 6;
 var USB_CONNECT_FAIL = 4;
-var REQUEST_ENABLE_BT_FAIL = 7;
 var NET_CONNECT_FAIL = 5;
+var WRITE_FAIL = 6;
+var REQUEST_ENABLE_BT_FAIL = 7;
 var BLUETOOTH_DISCONNECT = 8;
 var USB_DISCONNECT = 9;
 var NET_DISCONNECT = 10;
@@ -49,3 +48,7 @@ var DISABLE_BLUETOOTH_FAIL = 11;
 var SCAN_BLUETOOTHDEVICE_FAIL = 12;
 
 //bluetooth_state
+var STATE_OFF = 10;
+var STATE_TURNING_OFF = 13;
+var STATE_TURNING_ON = 11;
+var STATE_ON = 12;

@@ -15,14 +15,13 @@
 * [PosProinter.read](#read)
 
 ## Errors ##
-    NOT_CONNECT = -1; 没有连接设备
-    DISCOVERY_ERROR = 1;  扫描蓝牙设备错误
+    NOT_CONNECT = 1; 没有连接设备
     DISCONNECT_ERROR = 2; 断开连接错误
     BLUETOOTH_CONNECT_FAIL = 3; 蓝牙连接失败
-    WRITE_FAIL = 6; 往设备写数据失败
     USB_CONNECT_FAIL = 4; USB连接失败
-    REQUEST_ENABLE_BT_FAIL = 7;  打开蓝牙设备失败
     NET_CONNECT_FAIL = 5; 网络连接失败
+    WRITE_FAIL = 6; 往设备写数据失败
+    REQUEST_ENABLE_BT_FAIL = 7;  打开蓝牙设备失败
     BLUETOOTH_DISCONNECT = 8; 蓝牙打印机断开
     USB_DISCONNECT = 9; USB打印机断开
     NET_DISCONNECT = 10; 网络打印机断开
@@ -35,7 +34,7 @@
 必须先初始化，才能调用其他函数接口。
 
 ```javascript
-PosProinter.initialize(Success,Error);
+PosProinter.initService(Success,Error);
 ```
 ### getBluetoothState ###
 获取蓝牙设备的状态。
@@ -43,6 +42,11 @@ PosProinter.initialize(Success,Error);
 ```javascript
 PosProinter.getBluetoothState(Success,Error);
 ```
+#### 蓝牙状态码 ####
+    STATE_OFF = 10;
+    STATE_TURNING_OFF = 13;
+    STATE_TURNING_ON = 11;
+    STATE_ON = 12;
 ### enableBluetooth ###
 打开蓝牙端口。
 

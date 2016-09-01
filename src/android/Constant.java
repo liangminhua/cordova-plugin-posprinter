@@ -13,9 +13,8 @@ public class Constant {
     public static final String BOND_STATE = "bondState";
 
     // error_code
-    public static final int NOT_CONNECT = -1;
-    public static final int DISCOVERY_ERROR = 1;
-    public static final int DISCONNECT_ERROR = 2;
+    public static final int NOT_CONNECT = 1;
+    public static final int DISCONNECT_FAIL = 2;
     public static final int BLUETOOTH_CONNECT_FAIL = 3;
     public static final int USB_CONNECT_FAIL = 4;
     public static final int NET_CONNECT_FAIL = 5;
