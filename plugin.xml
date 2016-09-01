@@ -35,7 +35,7 @@
   <platform name="ios">
     <config-file parent="/*" target="config.xml">
       <feature name="PosPrinter">
-        <param name="ios-package" value="PosPrinter">
+        <param name="ios-package" value="PosPrinter"/>
       </feature>
     </config-file>
     <header-file src="src/ios/BLEManager.h" />
