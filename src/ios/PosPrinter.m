@@ -37,12 +37,12 @@
     
 }
 
--(void)initService:(CDVInvokedUrlCommand*)command{
+-(void)initialize:(CDVInvokedUrlCommand*)command{
     bluetoothManager =[XYBLEManager sharedInstance];
     wifiManager =[XYWIFIManager shareWifiManager];
     bluetoothManager.delegate =self;
     wifiManager.delegate= self;
-    CDVPluginResult pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    CDVPluginResult* pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [pluginResult setKeepCallbackAsBool:false];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
@@ -50,7 +50,7 @@
 -(void)scanBluetoothDevice:(CDVInvokedUrlCommand*)command{
     scanCallback =command.callbackId;
     [bluetoothManager XYstartScan];
-        CDVPluginResult pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+        CDVPluginResult* pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
         [pluginResult setKeepCallbackAsBool:true];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
