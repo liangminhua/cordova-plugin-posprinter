@@ -3,23 +3,20 @@
 #import "PosPrinter.h"
 
 @implementation PosPrinter
--(void)XYdidConnectPeripheral:(CBPeripheral *)peripheral{
-    
+
+-(void)centralManagerDidUpdateState:(CBCentralManager *)central{
+    return;
 }
--(void)XYdidUpdatePeripheralList:(NSArray *)peripherals RSSIList:(NSArray *)rssiList{
-    for (int i =0; i<[rssiList count]; i++) {
-        NSLog(@"%@",[rssiList objectAtIndex:i]);
-    }
+-(void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary<NSString *,id> *)advertisementData RSSI:(NSNumber *)RSSI{
+    NSLog(@"discover %@ %@",peripheral.name,peripheral.identifier.UUIDString);
+    NSDictionary* returnObj=[NSDictionary dictionaryWithObjectsAndKeys:peripheral.name,@"name",peripheral.identifier.UUIDString,@"address", nil];
+    [centralManager connectPeripheral:peripheral options:nil];
+    //[bluetoothManager XYconnectDevice:peripheral];
+    CDVPluginResult* pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:returnObj];
+    [pluginResult setKeepCallbackAsBool:true];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:scanCallback];
 }
--(void)XYdidFailToConnectPeripheral:(CBPeripheral *)peripheral error:(NSError *)error{
-    
-}
--(void)XYdidDisconnectPeripheral:(CBPeripheral *)peripheral isAutoDisconnect:(BOOL)isAutoDisconnect{
-    
-}
--(void)XYdidWriteValueForCharacteristic:(CBCharacteristic *)character error:(NSError *)error{
-    
-}
+
 
 -(void)XYWIFIManager:(XYWIFIManager *)manager didReadData:(NSData *)data tag:(long)tag{
     
@@ -40,7 +37,7 @@
 -(void)initialize:(CDVInvokedUrlCommand*)command{
     bluetoothManager =[XYBLEManager sharedInstance];
     wifiManager =[XYWIFIManager shareWifiManager];
-    bluetoothManager.delegate =self;
+    centralManager = [[CBCentralManager alloc]initWithDelegate:self queue:nil];
     wifiManager.delegate= self;
     CDVPluginResult* pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [pluginResult setKeepCallbackAsBool:false];
@@ -49,20 +46,27 @@
 
 -(void)scanBluetoothDevice:(CDVInvokedUrlCommand*)command{
     scanCallback =command.callbackId;
-    [bluetoothManager XYstartScan];
+    NSMutableArray* serviceUuids=nil;
+    NSNumber* allowDuplicates=[NSNumber numberWithBool:NO];
+    [centralManager scanForPeripheralsWithServices:serviceUuids options:@{CBCentralManagerScanOptionAllowDuplicatesKey:allowDuplicates}];
     CDVPluginResult* pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [pluginResult setKeepCallbackAsBool:true];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
 - (void)connectBluetooth:(CDVInvokedUrlCommand*)command{
-    NSString* bluetoothAddress=[command.arguments objectAtIndex:0];
-    NSString* connectcommnd=command.callbackId;
-    if(bluetoothManager!=nil){
-
-    }else{
-        
+    NSUUID* bluetoothAddress=[command.arguments objectAtIndex:0];
+    if(bluetoothAddress==nil)return;
+    NSLog(@"%@",bluetoothAddress);
+    NSArray* peripherals= [centralManager retrievePeripheralsWithIdentifiers:@[bluetoothAddress]];
+    if(peripherals.count==0){
+        return;
     }
+    CBPeripheral* peripheral=peripherals[0];
+    [centralManager connectPeripheral:peripheral options:nil];
+    //[bluetoothManager XYconnectDevice:peripheral];
+    CDVPluginResult* pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 - (void)connectNet:(CDVInvokedUrlCommand*)command{
     NSString* ipAddress=[command.arguments objectAtIndex:0];
