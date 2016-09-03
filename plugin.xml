@@ -35,7 +35,7 @@
   <platform name="ios">
     <config-file parent="/*" target="config.xml">
       <feature name="PosPrinter">
-        <param name="ios-package" value="PosPrinter"/>
+        <param name="ios-package" value="PosPrinter" />
       </feature>
     </config-file>
     <header-file src="src/ios/BLEManager.h" />
@@ -44,6 +44,9 @@
     <header-file src="src/ios/XYWIFIManager.h" />
     <header-file src="src/ios/PosPrinter.h" />
     <source-file src="src/ios/PosPrinter.m" />
-    <source-file src="src/ios/libXYPrinter.a" framework="true" />
+    <source-file src="src/ios/libXYPrinter.a" target-dir="/" framework="true" />
+    <framework src="SystemConfiguration.framework" />
+    <framework src="CFNetwork.framework" />
+    <framework src="CoreBluetooth.framework" />
   </platform>
 </plugin>

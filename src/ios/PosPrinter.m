@@ -1,6 +1,6 @@
 /********* PosPrinter.m Cordova Plugin Implementation *******/
 
-#import<PosPrinter.h>
+#import "PosPrinter.h"
 
 @implementation PosPrinter
 -(void)XYdidConnectPeripheral:(CBPeripheral *)peripheral{
@@ -50,24 +50,28 @@
 -(void)scanBluetoothDevice:(CDVInvokedUrlCommand*)command{
     scanCallback =command.callbackId;
     [bluetoothManager XYstartScan];
-        CDVPluginResult* pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-        [pluginResult setKeepCallbackAsBool:true];
+    CDVPluginResult* pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [pluginResult setKeepCallbackAsBool:true];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
 - (void)connectBluetooth:(CDVInvokedUrlCommand*)command{
     NSString* bluetoothAddress=[command.arguments objectAtIndex:0];
+    NSString* connectcommnd=command.callbackId;
     if(bluetoothManager!=nil){
 
     }else{
-    
+        
     }
 }
 - (void)connectNet:(CDVInvokedUrlCommand*)command{
     NSString* ipAddress=[command.arguments objectAtIndex:0];
     NSNumber* port= [command.arguments objectAtIndex:1];
+    if (port==nil) {
+        port=@(9100);
+    }
     [wifiManager XYConnectWithHost:ipAddress port:port.intValue completion:^(BOOL isConnect){
-    CDVPluginResult* pluginResult = nil;
+        CDVPluginResult* pluginResult = nil;
         if (isConnect) {
             pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
         }else{
@@ -77,7 +81,6 @@
     }];
 }
 -(void)disconnect:(CDVInvokedUrlCommand*)command{
-NSNumber* disconnectType=[command.arguments objectAtIndex0];
     [bluetoothManager XYdisconnectRootPeripheral];
     [wifiManager XYDisConnect];
     CDVPluginResult* pluginResult =[CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
@@ -86,8 +89,14 @@ NSNumber* disconnectType=[command.arguments objectAtIndex0];
 }
 - (void)write:(CDVInvokedUrlCommand*)command{
     CDVPluginResult* pluginResult = nil;
-    NSString* data =[command.arguments objectAtIndex:0];
-    [wifiManager XYSendMSGWith:data];
+    NSData* data =[command.arguments objectAtIndex:0];
+    if(wifiManager.connectOK){
+        [wifiManager XYWritePOSCommandWithData:data withResponse:^(NSData *data){
+            
+        }];
+    }
 }
 
+
 @end
+

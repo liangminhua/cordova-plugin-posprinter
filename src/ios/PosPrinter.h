@@ -5,6 +5,7 @@
     XYBLEManager*  bluetoothManager;
     XYWIFIManager* wifiManager;
     NSString* scanCallback;
+    NSMutableArray* CBPeripherals;
 }
 -(void) initialize:(CDVInvokedUrlCommand*)command;
 -(void) scanBluetoothDevice:(CDVInvokedUrlCommand*)command;
