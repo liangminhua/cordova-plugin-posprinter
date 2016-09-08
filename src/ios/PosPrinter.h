@@ -1,17 +1,37 @@
 #import <Cordova/CDV.h>
+
 #import "XYSDK.h"
-@interface PosPrinter : CDVPlugin< XYWIFIManagerDelegate,	CBCentralManagerDelegate> {
+
+@interface PosPrinter : CDVPlugin<XYWIFIManagerDelegate,XYBLEManagerDelegate> {
+
     // Member variables go here.
+
     XYBLEManager*  bluetoothManager;
+
     XYWIFIManager* wifiManager;
-    NSString* scanCallback;
-    NSMutableArray* CBPeripherals;
-    CBCentralManager* centralManager;
+
+    // NSString* scanCallback;
+
+    // NSMutableArray* CBPeripherals;
+
+    // CBCentralManager* centralManager;
+
 }
+
 -(void) initialize:(CDVInvokedUrlCommand*)command;
+
 -(void) scanBluetoothDevice:(CDVInvokedUrlCommand*)command;
+
 -(void) connectBluetooth:(CDVInvokedUrlCommand*)command;
+
 -(void) connectNet:(CDVInvokedUrlCommand*)command;
--(void) disconnect:(CDVInvokedUrlCommand*)command;
--(void) write:(CDVInvokedUrlCommand*)command;
+
+-(void) disconnectNetPort:(CDVInvokedUrlCommand*)command;
+
+-(void) disconnectBluetoothPort:(CDVInvokedUrlCommand*)command;
+
+-(void) writeToBluetoothDevice:(CDVInvokedUrlCommand*)command;
+
+-(void) writeToNetDevice:(CDVInvokedUrlCommand*)command;
+
 @end
