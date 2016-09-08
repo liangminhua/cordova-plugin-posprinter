@@ -43,6 +43,9 @@
     <header-file src="src/ios/XYSDK.h" />
     <header-file src="src/ios/XYWIFIManager.h" />
     <header-file src="src/ios/PosPrinter.h" />
+    <header-file src="src/ios/ImageTranster.h" />
+    <header-file src="src/ios/PosCommand.h" />
+    <header-file src="src/ios/TscCommand.h" />
     <source-file src="src/ios/PosPrinter.m" />
     <source-file src="src/ios/libIosXprinterSdk.a" framework="true" />
     <framework src="SystemConfiguration.framework" />
