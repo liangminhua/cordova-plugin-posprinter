@@ -193,20 +193,21 @@ static BLEManager *shareManager = nil;
 - (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)aPeripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI {
     
     NSArray *serviceUUIDs = [advertisementData objectForKey:CBAdvertisementDataServiceUUIDsKey];
-//    NSLog(@"aPeripheral========%@",aPeripheral);
-//    NSLog(@"APeripheralName==========%@",serviceUUIDs);
-//    NSLog(@"advertisementData ======= %@",advertisementData);
-//    NSLog(@">>> %@",aPeripheral.services);
+    NSLog(@"aPeripheral========%@",aPeripheral.identifier.UUIDString);
+    NSLog(@"APeripheralName==========%@",serviceUUIDs);
+    NSLog(@"advertisementData ======= %@",advertisementData);
+    NSLog(@">>> %@",aPeripheral.services);
     // 针对性的发现设备
     BOOL isExist = NO;
     for (int i = 0; i < serviceUUIDs.count; i++) {
         NSString *uuid = [serviceUUIDs[i] UUIDString];
-        if ([uuid isEqualToString:@"18F0"]) {
+        if ([uuid isEqualToString:@"FFF0"]) {//便携打印机为FFF0 默认18f0
             isExist = YES;
             break;
         }
     }
-    if ([aPeripheral.identifier.UUIDString isEqualToString:@"49535343-FE7D-4AE5-8FA9-9FAFD205E455"]) {
+    if ([aPeripheral.identifier.UUIDString isEqualToString:@"49535343-FE7D-4AE5-8FA9-9FAFD205E455"]) {//@"49535343-FE7D-4AE5-8FA9-9FAFD205E455"
+        NSLog(@"进入此方法");
         isExist = YES;
     }
     if (isExist) {
@@ -355,13 +356,17 @@ static BLEManager *shareManager = nil;
     
     //-------------------------------------------------------
     //此处对服务UUID 进行 一对一 匹配，然后再遍历 其特征值，再对需要用到的特征UUID 进行一对一匹配
-//    
-    if ([service.UUID isEqual: [CBUUID UUIDWithString:@"18F0"]])//
+//
+    NSLog(@"%s%@",__func__,service.UUID);
+    if ([service.UUID isEqual: [CBUUID UUIDWithString:@"49535343-FE7D-4AE5-8FA9-9FAFD205E455"]])//便携打印机使用这个uuid：49535343-FE7D-4AE5-8FA9-9FAFD205E455 默认18f0
     {
         write_characteristic = nil;
         read_characteristic = nil;
+        NSLog(@"jsjsjssjsjsjs");
         for (CBCharacteristic *aChar in service.characteristics)
         {
+            
+            NSLog(@"jsjsjsjsjsskkk======%@",aChar);
             const CBCharacteristicProperties properties = [aChar properties];
             
             // 消息通知类型的特征值
@@ -373,7 +378,7 @@ static BLEManager *shareManager = nil;
             if ((CBCharacteristicPropertyWrite && properties) || (CBCharacteristicPropertyWriteWithoutResponse && properties)) {
                 write_characteristic = aChar;
                 [aPeripheral readValueForCharacteristic:aChar];
-//                 NSLog(@"Power Characteristic : %@", aChar.UUID);
+                 NSLog(@"Power Characteristic : %@", aChar.UUID);
             }
             
             // read 特征值
@@ -414,7 +419,7 @@ static BLEManager *shareManager = nil;
  */
 #pragma mark 获取蓝牙的信号强度
 - (void)peripheralDidUpdateRSSI:(CBPeripheral *)peripheral error:(NSError *)error {
-    NSLog(@"RSSI:%i", [[peripheral RSSI] intValue]);
+   // NSLog(@"RSSI:%i", [[peripheral RSSI] intValue]);
     int rssi;
     rssi=[[peripheral RSSI] intValue];
     NSString *fid;
@@ -446,7 +451,10 @@ static BLEManager *shareManager = nil;
         if (data) {
             
             // 收到数据回调
-            self.receiveBlock(characteristic);
+            if (self.receiveBlock!=nil) {
+                self.receiveBlock(characteristic);
+            }
+            
             [_dataArray addObject:[NSString stringWithFormat:@"收到:%@",data]];
         }
         if (_dataArray.count > 1000) {

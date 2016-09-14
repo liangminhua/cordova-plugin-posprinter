@@ -10,6 +10,10 @@
 
     XYWIFIManager* wifiManager;
 
+    NSArray* scanPeripherals;
+
+    NSString* scanCallback;
+    
     // NSString* scanCallback;
 
     // NSMutableArray* CBPeripherals;

@@ -107,7 +107,7 @@
     }
 };
 -(void)write:(CDVInvokedUrlCommand*)command{
-    [self writeToNetDevice:command];
+    [self writeToBluetoothDevice:command];
     return;
 }
 -(void) connectNet:(CDVInvokedUrlCommand*)command{
@@ -140,14 +140,22 @@
 };
 
 -(void) disconnectBluetoothPort:(CDVInvokedUrlCommand*)command{
-    [wifiManager XYDisConnect];
+    [bluetoothManager XYdisconnectRootPeripheral];
     CDVPluginResult* pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [pluginResult setKeepCallbackAsBool:false];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 };
 
 -(void) writeToBluetoothDevice:(CDVInvokedUrlCommand*)command{
-    return;
+    NSMutableData* mutableData= [[NSMutableData alloc]initWithCapacity:command.arguments.count];
+    for (NSNumber* number in command.arguments) {
+        char byte =number.charValue;
+        [mutableData appendBytes:&byte length:1];
+    }
+    [bluetoothManager XYWriteCommandWithData:mutableData];
+    CDVPluginResult* pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [pluginResult setKeepCallbackAsBool:false];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 };
 
 -(void) writeToNetDevice:(CDVInvokedUrlCommand*)command{
