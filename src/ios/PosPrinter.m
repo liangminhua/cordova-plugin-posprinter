@@ -107,7 +107,7 @@
     }
 };
 -(void)write:(CDVInvokedUrlCommand*)command{
-    [self writeToBluetoothDevice:command];
+
     return;
 }
 -(void) connectNet:(CDVInvokedUrlCommand*)command{

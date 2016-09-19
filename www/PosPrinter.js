@@ -26,9 +26,23 @@ exports.connectNet = function (arg0,arg1, success, error) {
 exports.disconnectCurrentPort = function (success, error) {
     exec(success, error, "PosPrinter", "disconnectCurrentPort", []);
 };
+// only ios 
+exports.disconnectNetPort = function (success, error) {
+    exec(success, error, "PosPrinter", "disconnectNetPort", []);
+};
+exports.disconnectBluetoothPort = function (success, error) {
+    exec(success, error, "PosPrinter", "disconnectBluetoothPort", []);
+};
 exports.write = function (arg0, success, error) {
     exec(success, error, "PosPrinter", "write", arg0);
 };
+exports.writeToNetDevice = function (arg0, success, error) {
+    exec(success, error, "PosPrinter", "writeToNetDevice", arg0);
+};
+exports.writeToBluetoothDevice = function (arg0, success, error) {
+    exec(success, error, "PosPrinter", "writeToBluetoothDevice", arg0);
+};
+// only android 
 exports.read = function (success, error) {
     exec(success, error, "PosPrinter", "read", []);
 };
