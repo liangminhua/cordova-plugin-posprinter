@@ -1,49 +1,86 @@
 #import "PosPrinter.h"
 
 @implementation PosPrinter
-
-//Bluetooth Delegate
-// 发现周边
-- (void)XYdidUpdatePeripheralList:(NSArray *)peripherals RSSIList:(NSArray *)rssiList{
-    scanPeripherals=peripherals;
-    if (scanCallback==nil) {
+-(void)centralManagerDidUpdateState:(CBCentralManager *)central{
+    NSLog(@"update: %ld",(long)central.state);
+}
+-(void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary<NSString *,id> *)advertisementData RSSI:(NSNumber *)RSSI{
+    NSMutableDictionary* returnObj = [NSMutableDictionary dictionary];
+    if (peripheral.name==nil) {
+        [returnObj setObject:@"" forKey:@"name"];
+    }else{
+        [returnObj setObject:peripheral.name forKey:@"name"];
+    }
+    
+    [returnObj setObject:peripheral.identifier.UUIDString forKey:@"address"];
+    CDVPluginResult* pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:returnObj];
+    [pluginResult setKeepCallbackAsBool:true];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:scanCallback];
+}
+-(void)centralManager:(CBCentralManager *)central didConnectPeripheral:(CBPeripheral *)peripheral{
+    NSLog(@"蓝牙连接成功");
+    // NSUUID * filterUuid= [[NSUUID UUID]initWithUUIDString:@"49535343-FE7D-4AE5-8FA9-9FAFD205E455"];
+    // [peripheral discoverServices:@[filterUuid]];
+    [peripheral discoverServices:nil];
+}
+-(void)peripheral:(CBPeripheral *)peripheral didDiscoverServices:(NSError *)error{
+    for (CBService *service in peripheral.services) {
+        NSLog(@"Discovered service %@", service);
+        [peripheral discoverCharacteristics:nil forService:service];
+    }
+}
+-(void)peripheral:(CBPeripheral *)peripheral didDiscoverCharacteristicsForService:(CBService *)service error:(NSError *)error{
+    if (connectCallback==nil) {
         return;
     }
-    for (unsigned int index=0; index<peripherals.count; ++index) {
-        NSMutableDictionary* returnObj = [NSMutableDictionary dictionary];
-        CBPeripheral* peripheral= [peripherals objectAtIndex:index];
-        NSLog(@"%@......%@",peripheral.name,peripheral.identifier.UUIDString);
-        if (peripheral.name==nil) {
-            [returnObj setObject:@"" forKey:@"name"];
-        }else{
-            [returnObj setObject:peripheral.name forKey:@"name"];
+    CDVPluginResult* pluginResult=nil;
+    for (CBCharacteristic *characteristic in service.characteristics) {
+        NSLog(@"Discovered characteristic %@", characteristic);
+        if ([characteristic.UUID.UUIDString isEqual:@"49535343-8841-43F4-A8D4-ECBE34729BB3"]) {
+            writeCharacteristic=characteristic;
+            pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+            
         }
-        
-        [returnObj setObject:peripheral.identifier.UUIDString forKey:@"address"];
-        CDVPluginResult* pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:returnObj];
-        [pluginResult setKeepCallbackAsBool:true];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:scanCallback];
-        
+        //49535343-1E4D-4BD9-BA61-23C647249616 "LED灯"
+        //49535343-8841-43F4-A8D4-ECBE34729BB3 "写数据"
     }
-};
-// 连接成功
-- (void)XYdidConnectPeripheral:(CBPeripheral *)peripheral{
+    if (pluginResult==nil) {
+        pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
+    }
+    [pluginResult setKeepCallbackAsBool:false];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:connectCallback];
+}
+-(void)centralManager:(CBCentralManager *)central didFailToConnectPeripheral:(CBPeripheral *)peripheral error:(NSError *)error{
+    if (connectCallback!=nil) {
+        CDVPluginResult* pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
+        [pluginResult setKeepCallbackAsBool:false];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:connectCallback];
+    }
+}
+-(void)centralManager:(CBCentralManager *)central didDisconnectPeripheral:(CBPeripheral *)peripheral error:(NSError *)error{
+    if(connectCallback!=nil){
+        CDVPluginResult* pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
+        [pluginResult setKeepCallbackAsBool:false];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:connectCallback];
+    }
+}
+-(void)peripheral:(CBPeripheral *)peripheral didWriteValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error{
+    if (writeCallback==nil) {
+        return;
+    }
+    CDVPluginResult *pluginResult =nil;
+    if (error) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:1];
 
-};
-// 连接失败
-- (void)XYdidFailToConnectPeripheral:(CBPeripheral *)peripheral error:(NSError *)error{
-    
-};
-// 断开连接
-- (void)XYdidDisconnectPeripheral:(CBPeripheral *)peripheral isAutoDisconnect:(BOOL)isAutoDisconnect{
-    
-};
-// 发送数据成功
-- (void)XYdidWriteValueForCharacteristic:(CBCharacteristic *)character error:(NSError *)error{
-    
-};
+    }else{
+        pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    }
+    [pluginResult setKeepCallbackAsBool:false];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:writeCallback];
+}
+
 //Wi-Fi Delegate
-// 成功连接主机
+ //成功连接主机
 - (void)XYWIFIManager:(XYWIFIManager *)manager didConnectedToHost:(NSString *)host port:(UInt16)port{
     NSLog(@"connect success!");
 };
@@ -66,50 +103,73 @@
 
 
 -(void) initialize:(CDVInvokedUrlCommand*)command{
-    bluetoothManager=[XYBLEManager sharedInstance];
-    bluetoothManager.delegate= self;
-    wifiManager= [XYWIFIManager shareWifiManager];
-    wifiManager.delegate=self;
+    NSNumber* request =[NSNumber numberWithBool:YES];
+    NSMutableDictionary* options= [NSMutableDictionary dictionary];
+    if (request) {
+        [options setValue:request forKey:CBCentralManagerOptionShowPowerAlertKey];
+    }
+    centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:nil options:options];
+    wifiManager = [XYWIFIManager shareWifiManager];
+    
+    connections= [NSMutableDictionary dictionary];
     CDVPluginResult* pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [pluginResult setKeepCallbackAsBool:false];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 };
 
 -(void) scanBluetoothDevice:(CDVInvokedUrlCommand*)command{
-    if (bluetoothManager!=nil) {
-        [bluetoothManager XYstartScan];
-        scanCallback =command.callbackId;
-        CDVPluginResult* pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-        [pluginResult setKeepCallbackAsBool:true];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    if(scanCallback!=nil){
+        return;
     }
+    NSNumber* allowDuplicates = [NSNumber numberWithBool:NO];
+    [centralManager scanForPeripheralsWithServices:nil options:@{ CBCentralManagerScanOptionAllowDuplicatesKey:allowDuplicates }];
+    scanCallback= command.callbackId;
+    CDVPluginResult* pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [pluginResult setKeepCallbackAsBool:true];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 };
-
+-(void) stopScanBluetoothDevices:(CDVInvokedUrlCommand*)command{
+    [centralManager stopScan];
+    CDVPluginResult* pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [pluginResult setKeepCallbackAsBool:true];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+};
 -(void) connectBluetooth:(CDVInvokedUrlCommand*)command{
-    if(bluetoothManager!=nil){
-        NSString* uuid= [command.arguments objectAtIndex:0];
-        CBPeripheral* connectPeripheral=nil;
-        for (CBPeripheral* peripheral in scanPeripherals) {
-            if([peripheral.identifier.UUIDString isEqualToString: uuid])
-            {  connectPeripheral=peripheral;
-                break;
-            }
-        }
-        CDVPluginResult* pluginResult=nil;
-        if (bluetoothManager!=nil) {
-            [bluetoothManager XYconnectDevice:connectPeripheral];
-            pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-        }else{
-            pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:1];
-        }
+    NSString* address= [command.arguments objectAtIndex:0];
+    NSUUID * uuid= [[NSUUID UUID]initWithUUIDString:address];
+    NSArray* peripherals =[centralManager retrievePeripheralsWithIdentifiers:@[uuid]];
+    if (peripherals.count==0) {
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:1];
+        [pluginResult setKeepCallbackAsBool:false];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
+    }
+    connectCallback= command.callbackId;
+    CBPeripheral * peripheral =peripherals[0];
+    [peripheral setDelegate:self];
+    writePeripheral=peripheral;
+    [centralManager connectPeripheral:peripheral options:nil];
+};
+-(void) disconnectBluetoothPort:(CDVInvokedUrlCommand*)command{
+    if (centralManager!=nil&& writePeripheral!=nil) {
+        [centralManager cancelPeripheralConnection:writePeripheral];
+        CDVPluginResult* pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
         [pluginResult setKeepCallbackAsBool:false];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }
 };
--(void)write:(CDVInvokedUrlCommand*)command{
-
-    return;
-}
+-(void)writeToBluetoothDevice:(CDVInvokedUrlCommand*)command{
+    if (writePeripheral==nil) {
+        return;
+    }
+    writeCallback= command.callbackId;
+    NSMutableData* mutableData= [[NSMutableData alloc]initWithCapacity:command.arguments.count];
+    for (NSNumber* number in command.arguments) {
+        char byte =number.charValue;
+        [mutableData appendBytes:&byte length:1];
+    }
+    [writePeripheral writeValue:mutableData forCharacteristic:writeCharacteristic type:CBCharacteristicWriteWithResponse];
+};
 -(void) connectNet:(CDVInvokedUrlCommand*)command{
     NSString* ipAddress= [command.arguments objectAtIndex:0];
     NSNumber* port= [command.arguments objectAtIndex:1];
@@ -135,25 +195,6 @@
         pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
         
     }
-    [pluginResult setKeepCallbackAsBool:false];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-};
-
--(void) disconnectBluetoothPort:(CDVInvokedUrlCommand*)command{
-    [bluetoothManager XYdisconnectRootPeripheral];
-    CDVPluginResult* pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-    [pluginResult setKeepCallbackAsBool:false];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-};
-
--(void) writeToBluetoothDevice:(CDVInvokedUrlCommand*)command{
-    NSMutableData* mutableData= [[NSMutableData alloc]initWithCapacity:command.arguments.count];
-    for (NSNumber* number in command.arguments) {
-        char byte =number.charValue;
-        [mutableData appendBytes:&byte length:1];
-    }
-    [bluetoothManager XYWriteCommandWithData:mutableData];
-    CDVPluginResult* pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [pluginResult setKeepCallbackAsBool:false];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 };
