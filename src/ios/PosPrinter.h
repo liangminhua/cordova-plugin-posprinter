@@ -3,22 +3,34 @@
 #import "XYWIFIManager.h"
 #import <CoreBluetooth/CoreBluetooth.h>
 
+int const NOT_CONNECT = -1;
+int const DISCOVERY_ERROR = 1;
+int const DISCONNECT_ERROR = 2;
+int const BLUETOOTH_CONNECT_FAIL = 3;
+int const NET_CONNECT_FAIL = 5;
+int const WRITE_FAIL = 6;
+int const BLUETOOTH_DISCONNECT = 8;
+int const NET_DISCONNECT = 10;
+int const SCAN_BLUETOOTHDEVICE_FAIL = 12;
+
 @interface PosPrinter : CDVPlugin<CBCentralManagerDelegate,CBPeripheralDelegate,XYWIFIManagerDelegate> {
 
     XYWIFIManager* wifiManager;
     
     CBCentralManager *centralManager;
     
-    NSMutableDictionary* connections;
-
     NSArray* scanPeripherals;
-
+    
     NSString* scanCallback;
     
-    NSString* connectCallback;
+    NSString* connectBluetoothCallback;
     
-    NSString* writeCallback;
-
+    NSString* connectNetCallback;
+    
+    NSString* writeBluetoothCallback;
+    
+    NSString* writeNetCallback;
+    
     CBPeripheral *writePeripheral;
     
     CBCharacteristic *writeCharacteristic;
@@ -31,8 +43,6 @@
 -(void) connectBluetooth:(CDVInvokedUrlCommand*)command;
 
 -(void) connectNet:(CDVInvokedUrlCommand*)command;
-
-//-(void) disconnect:(CDVInvokedUrlCommand*)command;
 
 -(void) disconnectNetPort:(CDVInvokedUrlCommand*)command;
 
