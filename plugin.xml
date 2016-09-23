@@ -38,11 +38,6 @@
         <param name="ios-package" value="PosPrinter" />
       </feature>
     </config-file>
-    <header-file src="src/ios/XYSDK.h" />
-    <header-file src="src/ios/BLEManager.h" />
-    <source-file src="src/ios/BLEManager.m" />
-    <header-file src="src/ios/XYBLEManager.h" />
-    <source-file src="src/ios/XYBLEManager.m" />
     <header-file src="src/ios/XYWIFIManager.h" />
     <source-file src="src/ios/XYWIFIManager.m" />
     <header-file src="src/ios/PosPrinter.h" />

@@ -5,26 +5,14 @@ exports.initialize = function (success, error) {
 exports.getBluetoothState = function (success, error) {
     exec(success, error, "PosPrinter", "getBluetoothState", []);
 };
-exports.enableBluetooth = function (success, error) {
-    exec(success, error, "PosPrinter", "enableBluetooth", []);
-};
-exports.disableBluetooth = function (success, error) {
-    exec(success, error, "PosPrinter", "disableBluetooth", []);
-};
 exports.scanBluetoothDevice = function (success, error) {
     exec(success, error, "PosPrinter", "scanBluetoothDevice", []);
-};
-exports.connectUsb = function (arg0, success, error) {
-    exec(success, error, "PosPrinter", "connectUsb", [arg0]);
 };
 exports.connectBluetooth = function (arg0, success, error) {
     exec(success, error, "PosPrinter", "connectBluetooth", [arg0]);
 };
 exports.connectNet = function (arg0,arg1, success, error) {
     exec(success, error, "PosPrinter", "connectNet", [arg0,arg1]);
-};
-exports.disconnectCurrentPort = function (success, error) {
-    exec(success, error, "PosPrinter", "disconnectCurrentPort", []);
 };
 // only ios 
 exports.disconnectNetPort = function (success, error) {
@@ -43,6 +31,18 @@ exports.writeToBluetoothDevice = function (arg0, success, error) {
     exec(success, error, "PosPrinter", "writeToBluetoothDevice", arg0);
 };
 // only android 
+exports.enableBluetooth = function (success, error) {
+    exec(success, error, "PosPrinter", "enableBluetooth", []);
+};
+exports.disableBluetooth = function (success, error) {
+    exec(success, error, "PosPrinter", "disableBluetooth", []);
+};
+exports.connectUsb = function (arg0, success, error) {
+    exec(success, error, "PosPrinter", "connectUsb", [arg0]);
+};
+exports.disconnectCurrentPort = function (success, error) {
+    exec(success, error, "PosPrinter", "disconnectCurrentPort", []);
+};
 exports.read = function (success, error) {
     exec(success, error, "PosPrinter", "read", []);
 };
