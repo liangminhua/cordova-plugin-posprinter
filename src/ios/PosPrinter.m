@@ -71,7 +71,7 @@
     }
     CDVPluginResult *pluginResult =nil;
     if (error) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:1];
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:WRITE_FAIL];
         
     }else{
         pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
@@ -199,11 +199,14 @@
         port=@(9100);
     }
     [wifiManager XYConnectWithHost:ipAddress port:port.intValue completion:^(BOOL isConnect) {
+        CDVPluginResult* pluginResult=nil;
         if (isConnect) {
-            CDVPluginResult* pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-            [pluginResult setKeepCallbackAsBool:false];
-            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+            pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+        }else{
+            pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:NET_CONNECT_FAIL];
         }
+        [pluginResult setKeepCallbackAsBool:false];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }];
 };
 
@@ -212,7 +215,7 @@
     CDVPluginResult* pluginResult=nil;
     if( wifiManager.connectOK)
     {
-        pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
+        pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:DISCONNECT_ERROR];
     }else{
         pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK];        
     }
