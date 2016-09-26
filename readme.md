@@ -2,17 +2,21 @@
    使用ESC/TSC命令在POS打印机上打印
 
 ## Methods ##
-* [PosProinter.initialize](#initialize)
-* [PosProinter.getBluetoothState](#getbluetoothstate)
-* [PosProinter.enableBluetooth](#enablebluetooth)
-* [PosProinter.disableBluetooth](#disablebluetooth)
-* [PosProinter.scanBluetoothDevice](#scanbluetoothdevice)
-* [PosProinter.connectUsb](#connectusb)
-* [PosProinter.connectBluetooth](#connectbluetooth)
-* [PosProinter.connectNet](#connectnet)
-* [PosProinter.disconnectCurrentPort](#disconnectcurrentport)
-* [PosProinter.write](#write)
-* [PosProinter.read](#read)
+* [PosPrinter.initialize](#initialize)
+* [PosPrinter.getBluetoothState](#getbluetoothstate)(不推荐使用)
+* [PosPrinter.enableBluetooth](#enablebluetooth(Android))
+* [PosPrinter.disableBluetooth](#disablebluetooth)(Android)
+* [PosPrinter.scanBluetoothDevice](#scanbluetoothdevice)
+* [PosPrinter.connectUsb](#connectusb)(Android)
+* [PosPrinter.connectBluetooth](#connectbluetooth)
+* [PosPrinter.connectNet](#connectnet)
+* [PosPrinter.disconnectCurrentPort](#disconnectcurrentport)(Android)
+* [PosPrinter.write](#write)(Android)
+* [PosPrinter.disconnectNetPort](#disconnectNetPort)(IOS)
+* [PosPrinter.disconnectBluetoothPort](#disconnectBluetoothPort)(IOS)
+* [PosPrinter.writeToNetDevice](#writeToNetDevice)(IOS)
+* [PosPrinter.writeToBluetoothDevice](#writeToBluetoothDevice)(IOS)
+* [PosPrinter.read](#read)(Android)
 
 ## Errors ##
     NOT_CONNECT = -1; 没有连接设备
@@ -35,32 +39,32 @@
 必须先初始化，才能调用其他函数接口。
 
 ```javascript
-PosProinter.initService(Success,Error);
+PosPrinter.initService(Success,Error);
 ```
 ### getBluetoothState ###
-获取蓝牙设备的状态。
+获取蓝牙设备的状态。（IOS 和 Android获取的状态码不一致）
 
 ```javascript
-PosProinter.getBluetoothState(Success,Error);
+PosPrinter.getBluetoothState(Success,Error);
 ```
 ### enableBluetooth ###
 打开蓝牙端口。
 
 ```javascript
-PosProinter.enableBluetooth(Success,Error);
+PosPrinter.enableBluetooth(Success,Error);
 ```
 ### disableBluetooth ###
 关闭蓝牙端口。
 
 ```javascript
-PosProinter.disableBluetooth(Success,Error);
+PosPrinter.disableBluetooth(Success,Error);
 ```
 
 ### scanBluetoothDevice ###
 扫描周围的蓝牙设备,12秒后自动停止。
 
 ```javascript
-PosProinter.scanBluetoothDevice(Success, Error);
+PosPrinter.scanBluetoothDevice(Success, Error);
 ```
 
 ##### Success #####
@@ -82,7 +86,7 @@ PosProinter.scanBluetoothDevice(Success, Error);
 连接Usb端口
 
 ```javascript
-PosProinter.connectUsb(usbDeviceName,Success, Error);
+PosPrinter.connectUsb(usbDeviceName,Success, Error);
 ```
 
 ##### Params #####
@@ -92,7 +96,7 @@ PosProinter.connectUsb(usbDeviceName,Success, Error);
 连接蓝牙打印机
 
 ```javascript
-PosProinter.connectBluetooth(bluetoothAddress,Success, Error);
+PosPrinter.connectBluetooth(bluetoothAddress,Success, Error);
 ```
 ##### Params #####
 * bluetoothAddress - 蓝牙地址（字符串）。
@@ -100,7 +104,7 @@ PosProinter.connectBluetooth(bluetoothAddress,Success, Error);
 ### connectNet ###
 连接网络打印机
 ```javascript
-PosProinter.connectNet(ipAddress,port,Success, Error);
+PosPrinter.connectNet(ipAddress,port,Success, Error);
 ```
 ##### Params #####
 * ipAddress- Ip地址（字符串）。
@@ -111,17 +115,50 @@ PosProinter.connectNet(ipAddress,port,Success, Error);
 断开最近连接打印机
 
 ```javascript
-PosProinter.disconnect(null,Success, Error);
+PosPrinter.disconnect(Success, Error);
 ```
 
 ### write ###
 以byte数组形式传输数据到打印机。
 
 ```javascript
-PosProinter.write(data,Success, Error);
+PosPrinter.write(data,Success, Error);
 ```
 ##### Params #####
 * data - 一个包含打印内容的byte数组。因为javascript没有byte，所以以数字替代。
+
+### disconnectNetPort ###
+IOS设断开已经连接的网络端口。
+
+```javascript
+PosPrinter.disconnectNetPort(Success, Error);
+```
+
+### disconnectBluetoothPort ###
+IOS设备断开已经连接的蓝牙端口。
+
+```javascript
+PosPrinter.disconnectBluetoothPort(Success, Error);
+```
+
+
+### writeToNetDevice ###
+IOS设备通过网络形式以byte数组形式传输数据到打印机。
+
+```javascript
+PosPrinter.write(data,Success, Error);
+```
+##### Params #####
+* data - 一个包含打印内容的byte数组。因为javascript没有byte，所以以数字替代
+
+### writeToBluetoothDevice ###
+IOS设备通过蓝牙形式以byte数组形式传输数据到打印机。
+
+```javascript
+PosPrinter.write(data,Success, Error);
+```
+##### Params #####
+* data - 一个包含打印内容的byte数组。因为javascript没有byte，所以以数字替代
 
 ### read ###
 读取打印机缓存区数据

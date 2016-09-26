@@ -21,9 +21,6 @@ exports.disconnectNetPort = function (success, error) {
 exports.disconnectBluetoothPort = function (success, error) {
     exec(success, error, "PosPrinter", "disconnectBluetoothPort", []);
 };
-exports.write = function (arg0, success, error) {
-    exec(success, error, "PosPrinter", "write", arg0);
-};
 exports.writeToNetDevice = function (arg0, success, error) {
     exec(success, error, "PosPrinter", "writeToNetDevice", arg0);
 };
@@ -42,6 +39,9 @@ exports.connectUsb = function (arg0, success, error) {
 };
 exports.disconnectCurrentPort = function (success, error) {
     exec(success, error, "PosPrinter", "disconnectCurrentPort", []);
+};
+exports.write = function (arg0, success, error) {
+    exec(success, error, "PosPrinter", "write", arg0);
 };
 exports.read = function (success, error) {
     exec(success, error, "PosPrinter", "read", []);
