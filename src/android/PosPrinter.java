@@ -160,8 +160,11 @@ public class PosPrinter extends CordovaPlugin {
   }
 
   private void getBluetoothState(CallbackContext callbackContext) {
-    int state= bluetoothAdapter.getState();
-    callbackContext.success(state);
+    if (BluetoothAdapter.STATE_ON != bluetoothAdapter.getState()) {
+      callbackContext.success(1);
+    } else {
+      callbackContext.success(0);
+    }
   }
 
   private void enableBluetooth(final CallbackContext callbackContext) {
@@ -292,7 +295,7 @@ public class PosPrinter extends CordovaPlugin {
 
         @Override
         public void onfailed() {
-          callbackContext.error(Constant.DISCONNECT_FAIL);
+          callbackContext.error(Constant.DISCONNECT_ERROR);
         }
       });
     } else {
