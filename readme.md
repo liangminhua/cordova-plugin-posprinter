@@ -13,10 +13,10 @@
 * [PosPrinter.connectNet](#connectnet)
 * [PosPrinter.disconnectCurrentPort](#disconnectcurrentport)(Android)
 * [PosPrinter.write](#write)(Android)
-* [PosPrinter.disconnectNetPort](#disconnectNetPort)(IOS)
-* [PosPrinter.disconnectBluetoothPort](#disconnectBluetoothPort)(IOS)
-* [PosPrinter.writeToNetDevice](#writeToNetDevice)(IOS)
-* [PosPrinter.writeToBluetoothDevice](#writeToBluetoothDevice)(IOS)
+* [PosPrinter.disconnectNetPort](#disconnectnetport)(IOS)
+* [PosPrinter.disconnectBluetoothPort](#disconnectbluetoothport)(IOS)
+* [PosPrinter.writeToNetDevice](#writetonetdevice)(IOS)
+* [PosPrinter.writeToBluetoothDevice](#writetobluetoothdevice)(IOS)
 * [PosPrinter.read](#read)(Android)
 
 ## Errors ##
