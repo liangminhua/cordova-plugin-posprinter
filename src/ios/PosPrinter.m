@@ -129,15 +129,14 @@
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 };
 -(void) getBluetoothState:(CDVInvokedUrlCommand*)command{
-    if(centralManager!=nil){
+        CDVPluginResult* pluginResult=nil;
         if (centralManager.state ==CBManagerStatePoweredOn){
-            CDVPluginResult* pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:true];
-            [pluginResult setKeepCallbackAsBool:false];
-            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+            pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:1];
         }else{
-                
+            pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:0];
         }
-    }
+        [pluginResult setKeepCallbackAsBool:false];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 };
 -(void) scanBluetoothDevice:(CDVInvokedUrlCommand*)command{
     if (centralManager.state!=CBManagerStatePoweredOn) {

@@ -3,10 +3,11 @@
 
 ## Methods ##
 * [PosPrinter.initialize](#initialize)
-* [PosPrinter.getBluetoothState](#getbluetoothstate)(不推荐使用)
+* [PosPrinter.getBluetoothState](#getbluetoothstate)
 * [PosPrinter.enableBluetooth](#enablebluetooth(Android))
 * [PosPrinter.disableBluetooth](#disablebluetooth)(Android)
 * [PosPrinter.scanBluetoothDevice](#scanbluetoothdevice)
+* [stopScanBluetoothDevices](#stopscanbluetoothdevices)(IOS)
 * [PosPrinter.connectUsb](#connectusb)(Android)
 * [PosPrinter.connectBluetooth](#connectbluetooth)
 * [PosPrinter.connectNet](#connectnet)
@@ -42,11 +43,15 @@
 PosPrinter.initService(Success,Error);
 ```
 ### getBluetoothState ###
-获取蓝牙设备的状态。（IOS 和 Android获取的状态码不一致）
+获取蓝牙设备的状态。
 
 ```javascript
 PosPrinter.getBluetoothState(Success,Error);
 ```
+##### Success #####
+*  1 --- 蓝牙设备打开
+*  2 --- 蓝牙设备关闭
+
 ### enableBluetooth ###
 打开蓝牙端口。
 
@@ -68,18 +73,21 @@ PosPrinter.scanBluetoothDevice(Success, Error);
 ```
 
 ##### Success #####
-* "OK"=> result => Scan has stopped (after 12s)
+* Android 会在扫描12秒后自动关闭扫描，IOS需要调用stopScanBluetoothDevices
 
 ```javascript
-///BOND_BONDED 12
-///BOND_BONDING 11
-///BOND_NONE 10
-///result
 {
   "deviceName": "Gprinter",
   "deviceAddress": "8C:DE:52:C7:5A:C8",
   "bondState": 10
 }
+```
+
+### stopScanBluetoothDevices ###
+* IOS设备停止扫描周围的蓝牙设备。
+
+```javascript
+PosPrinter.stopScanBluetoothDevices(Success);
 ```
 
 ### connectUsb ###
