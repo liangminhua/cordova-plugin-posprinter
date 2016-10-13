@@ -7,7 +7,7 @@
 * [PosPrinter.enableBluetooth](#enablebluetooth(Android))
 * [PosPrinter.disableBluetooth](#disablebluetooth)(Android)
 * [PosPrinter.scanBluetoothDevice](#scanbluetoothdevice)
-* [stopScanBluetoothDevices](#stopscanbluetoothdevices)(IOS)
+* [PosPrinter.stopScanBluetoothDevices](#stopscanbluetoothdevices)
 * [PosPrinter.connectUsb](#connectusb)(Android)
 * [PosPrinter.connectBluetooth](#connectbluetooth)
 * [PosPrinter.connectNet](#connectnet)

@@ -68,6 +68,7 @@ public class PosPrinter extends CordovaPlugin {
       }
     }
   };
+
   @Override
   public void onActivityResult(int requestCode, int resultCode, Intent intent) {
     super.onActivityResult(requestCode, resultCode, intent);
@@ -80,6 +81,7 @@ public class PosPrinter extends CordovaPlugin {
       }
     }
   }
+
   @Override
   public void onDestroy() {
     super.onDestroy();
@@ -109,6 +111,10 @@ public class PosPrinter extends CordovaPlugin {
     }
     if (action.equals("scanBluetoothDevice")) {
       scanBluetoothDevice(callbackContext);
+      return true;
+    }
+    if (action.equals("stopScanBluetoothDevices")) {
+      stopScanBluetoothDevices(callbackContext);
       return true;
     }
     if (action.equals("connectUsb")) {
@@ -167,6 +173,11 @@ public class PosPrinter extends CordovaPlugin {
     }
   }
 
+  private void stopScanBluetoothDevices(final CallbackContext callbackContext) {
+    bluetoothAdapter.cancelDiscovery();
+    callbackContext.success();
+  }
+
   private void enableBluetooth(final CallbackContext callbackContext) {
     if (!bluetoothAdapter.isEnabled()) {
       enableCallback = callbackContext;
@@ -189,9 +200,7 @@ public class PosPrinter extends CordovaPlugin {
     IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
     cordova.getActivity().registerReceiver(bluetoothReceiver, filter);
     boolean result = bluetoothAdapter.startDiscovery();
-    if (result) {
-      callbackContext.success();
-    } else {
+    if (!result) {
       callbackContext.error(Constant.SCAN_BLUETOOTHDEVICE_FAIL);
     }
   }

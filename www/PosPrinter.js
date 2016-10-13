@@ -1,53 +1,54 @@
+var PluginName = "PosPrinter";
 var exec = require('cordova/exec');
-exports.initialize = function (success, error) {
-    exec(success, error, "PosPrinter", "initialize", []);
+exports.initialize = function (success) {
+    exec(success, success, PluginName, "initialize", []);
 };
 exports.getBluetoothState = function (success) {
-    exec(success, success, "PosPrinter", "getBluetoothState", []);
+    exec(success, success, PluginName, "getBluetoothState", []);
 };
 exports.scanBluetoothDevice = function (success, error) {
-    exec(success, error, "PosPrinter", "scanBluetoothDevice", []);
+    exec(success, error, PluginName, "scanBluetoothDevice", []);
 };
 exports.connectBluetooth = function (arg0, success, error) {
-    exec(success, error, "PosPrinter", "connectBluetooth", [arg0]);
+    exec(success, error, PluginName, "connectBluetooth", [arg0]);
 };
-exports.connectNet = function (arg0,arg1, success, error) {
-    exec(success, error, "PosPrinter", "connectNet", [arg0,arg1]);
+exports.connectNet = function (arg0, arg1, success, error) {
+    exec(success, error, PluginName, "connectNet", [arg0, arg1]);
+};
+exports.stopScanBluetoothDevices = function (success) {
+    exec(success, success, PluginName, "stopScanBluetoothDevices", []);
 };
 // only ios 
-exports.stopScanBluetoothDevices = function (success) {
-    exec(success, success, "PosPrinter", "scanBluetoothDevice", []);
-};
 exports.disconnectNetPort = function (success, error) {
-    exec(success, error, "PosPrinter", "disconnectNetPort", []);
+    exec(success, error, PluginName, "disconnectNetPort", []);
 };
 exports.disconnectBluetoothPort = function (success, error) {
-    exec(success, error, "PosPrinter", "disconnectBluetoothPort", []);
+    exec(success, error, PluginName, "disconnectBluetoothPort", []);
 };
 exports.writeToNetDevice = function (arg0, success, error) {
-    exec(success, error, "PosPrinter", "writeToNetDevice", arg0);
+    exec(success, error, PluginName, "writeToNetDevice", arg0);
 };
 exports.writeToBluetoothDevice = function (arg0, success, error) {
-    exec(success, error, "PosPrinter", "writeToBluetoothDevice", arg0);
+    exec(success, error, PluginName, "writeToBluetoothDevice", arg0);
 };
 // only android 
 exports.enableBluetooth = function (success, error) {
-    exec(success, error, "PosPrinter", "enableBluetooth", []);
+    exec(success, error, PluginName, "enableBluetooth", []);
 };
 exports.disableBluetooth = function (success, error) {
-    exec(success, error, "PosPrinter", "disableBluetooth", []);
+    exec(success, error, PluginName, "disableBluetooth", []);
 };
 exports.connectUsb = function (arg0, success, error) {
-    exec(success, error, "PosPrinter", "connectUsb", [arg0]);
+    exec(success, error, PluginName, "connectUsb", [arg0]);
 };
 exports.disconnectCurrentPort = function (success, error) {
-    exec(success, error, "PosPrinter", "disconnectCurrentPort", []);
+    exec(success, error, PluginName, "disconnectCurrentPort", []);
 };
 exports.write = function (arg0, success, error) {
-    exec(success, error, "PosPrinter", "write", arg0);
+    exec(success, error, PluginName, "write", arg0);
 };
 exports.read = function (success, error) {
-    exec(success, error, "PosPrinter", "read", []);
+    exec(success, error, PluginName, "read", []);
 };
 
 // error_code

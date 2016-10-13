@@ -2,7 +2,7 @@
 <plugin id="cordova-plugin-posprinter" version="1.0.3" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
   <name>PosPrinter</name>
   <js-module name="PosPrinter" src="www/PosPrinter.js">
-    <clobbers target="PosPrinter" />
+    <clobbers target="window.posprinter" />
   </js-module>
   <platform name="android">
     <config-file parent="/*" target="res/xml/config.xml">
