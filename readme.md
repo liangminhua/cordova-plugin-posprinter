@@ -1,23 +1,23 @@
-## PosPrinter ##
+## cordova-plugin-posprinter ##
    使用ESC/TSC命令在POS打印机上打印
 
 ## Methods ##
-* [PosPrinter.initialize](#initialize)
-* [PosPrinter.getBluetoothState](#getbluetoothstate)
-* [PosPrinter.enableBluetooth](#enablebluetooth(Android))
-* [PosPrinter.disableBluetooth](#disablebluetooth)(Android)
-* [PosPrinter.scanBluetoothDevice](#scanbluetoothdevice)
-* [PosPrinter.stopScanBluetoothDevices](#stopscanbluetoothdevices)
-* [PosPrinter.connectUsb](#connectusb)(Android)
-* [PosPrinter.connectBluetooth](#connectbluetooth)
-* [PosPrinter.connectNet](#connectnet)
-* [PosPrinter.disconnectCurrentPort](#disconnectcurrentport)(Android)
-* [PosPrinter.write](#write)(Android)
-* [PosPrinter.disconnectNetPort](#disconnectnetport)(IOS)
-* [PosPrinter.disconnectBluetoothPort](#disconnectbluetoothport)(IOS)
-* [PosPrinter.writeToNetDevice](#writetonetdevice)(IOS)
-* [PosPrinter.writeToBluetoothDevice](#writetobluetoothdevice)(IOS)
-* [PosPrinter.read](#read)(Android)
+* [posprinter.initialize](#initialize)
+* [posprinter.getBluetoothState](#getbluetoothstate)
+* [posprinter.enableBluetooth](#enablebluetooth(Android))
+* [posprinter.disableBluetooth](#disablebluetooth)(Android)
+* [posprinter.scanBluetoothDevice](#scanbluetoothdevice)
+* [posprinter.stopScanBluetoothDevices](#stopscanbluetoothdevices)
+* [posprinter.connectUsb](#connectusb)(Android)
+* [posprinter.connectBluetooth](#connectbluetooth)
+* [posprinter.connectNet](#connectnet)
+* [posprinter.disconnectCurrentPort](#disconnectcurrentport)(Android)
+* [posprinter.write](#write)(Android)
+* [posprinter.disconnectNetPort](#disconnectnetport)(IOS)
+* [posprinter.disconnectBluetoothPort](#disconnectbluetoothport)(IOS)
+* [posprinter.writeToNetDevice](#writetonetdevice)(IOS)
+* [posprinter.writeToBluetoothDevice](#writetobluetoothdevice)(IOS)
+* [posprinter.read](#read)(Android)
 
 ## Errors ##
     NOT_CONNECT = -1; 没有连接设备
@@ -40,13 +40,13 @@
 必须先初始化，才能调用其他函数接口。
 
 ```javascript
-PosPrinter.initService(Success,Error);
+posprinter.initService(Success,Error);
 ```
 ### getBluetoothState ###
 获取蓝牙设备的状态。
 
 ```javascript
-PosPrinter.getBluetoothState(Success,Error);
+posprinter.getBluetoothState(Success,Error);
 ```
 ##### Success #####
 *  1 --- 蓝牙设备打开
@@ -56,20 +56,20 @@ PosPrinter.getBluetoothState(Success,Error);
 打开蓝牙端口。
 
 ```javascript
-PosPrinter.enableBluetooth(Success,Error);
+posprinter.enableBluetooth(Success,Error);
 ```
 ### disableBluetooth ###
 关闭蓝牙端口。
 
 ```javascript
-PosPrinter.disableBluetooth(Success,Error);
+posprinter.disableBluetooth(Success,Error);
 ```
 
 ### scanBluetoothDevice ###
 扫描周围的蓝牙设备,12秒后自动停止。
 
 ```javascript
-PosPrinter.scanBluetoothDevice(Success, Error);
+posprinter.scanBluetoothDevice(Success, Error);
 ```
 
 ##### Success #####
@@ -87,14 +87,14 @@ PosPrinter.scanBluetoothDevice(Success, Error);
 * IOS设备停止扫描周围的蓝牙设备。
 
 ```javascript
-PosPrinter.stopScanBluetoothDevices(Success);
+posprinter.stopScanBluetoothDevices(Success);
 ```
 
 ### connectUsb ###
 连接Usb端口
 
 ```javascript
-PosPrinter.connectUsb(usbDeviceName,Success, Error);
+posprinter.connectUsb(usbDeviceName,Success, Error);
 ```
 
 ##### Params #####
@@ -104,7 +104,7 @@ PosPrinter.connectUsb(usbDeviceName,Success, Error);
 连接蓝牙打印机
 
 ```javascript
-PosPrinter.connectBluetooth(bluetoothAddress,Success, Error);
+posprinter.connectBluetooth(bluetoothAddress,Success, Error);
 ```
 ##### Params #####
 * bluetoothAddress - 蓝牙地址（字符串）。
@@ -112,7 +112,7 @@ PosPrinter.connectBluetooth(bluetoothAddress,Success, Error);
 ### connectNet ###
 连接网络打印机
 ```javascript
-PosPrinter.connectNet(ipAddress,port,Success, Error);
+posprinter.connectNet(ipAddress,port,Success, Error);
 ```
 ##### Params #####
 * ipAddress- Ip地址（字符串）。
@@ -123,14 +123,14 @@ PosPrinter.connectNet(ipAddress,port,Success, Error);
 断开最近连接打印机
 
 ```javascript
-PosPrinter.disconnect(Success, Error);
+posprinter.disconnect(Success, Error);
 ```
 
 ### write ###
 以byte数组形式传输数据到打印机。
 
 ```javascript
-PosPrinter.write(data,Success, Error);
+posprinter.write(data,Success, Error);
 ```
 ##### Params #####
 * data - 一个包含打印内容的byte数组。因为javascript没有byte，所以以数字替代。
@@ -139,14 +139,14 @@ PosPrinter.write(data,Success, Error);
 IOS设断开已经连接的网络端口。
 
 ```javascript
-PosPrinter.disconnectNetPort(Success, Error);
+posprinter.disconnectNetPort(Success, Error);
 ```
 
 ### disconnectBluetoothPort ###
 IOS设备断开已经连接的蓝牙端口。
 
 ```javascript
-PosPrinter.disconnectBluetoothPort(Success, Error);
+posprinter.disconnectBluetoothPort(Success, Error);
 ```
 
 
@@ -154,7 +154,7 @@ PosPrinter.disconnectBluetoothPort(Success, Error);
 IOS设备通过网络形式以byte数组形式传输数据到打印机。
 
 ```javascript
-PosPrinter.write(data,Success, Error);
+posprinter.write(data,Success, Error);
 ```
 ##### Params #####
 * data - 一个包含打印内容的byte数组。因为javascript没有byte，所以以数字替代
@@ -163,7 +163,7 @@ PosPrinter.write(data,Success, Error);
 IOS设备通过蓝牙形式以byte数组形式传输数据到打印机。
 
 ```javascript
-PosPrinter.write(data,Success, Error);
+posprinter.write(data,Success, Error);
 ```
 ##### Params #####
 * data - 一个包含打印内容的byte数组。因为javascript没有byte，所以以数字替代
