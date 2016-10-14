@@ -1,7 +1,7 @@
 var PluginName = "PosPrinter";
 var exec = require('cordova/exec');
-exports.initialize = function (success) {
-    exec(success, success, PluginName, "initialize", []);
+exports.initialize = function (success, args) {
+    exec(success, success, PluginName, "initialize", [args]);
 };
 exports.getBluetoothState = function (success) {
     exec(success, success, PluginName, "getBluetoothState", []);

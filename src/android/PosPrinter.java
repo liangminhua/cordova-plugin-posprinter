@@ -7,19 +7,11 @@ package cordova.plugin.posprinter;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.os.Build;
-import android.os.IBinder;
 import android.util.Log;
-
-import net.posprinter.posprinterface.IMyBinder;
-import net.posprinter.posprinterface.UiExecute;
-import net.posprinter.service.PosprinterService;
-import net.posprinter.utils.RoundQueue;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
@@ -28,317 +20,178 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Arrays;
-
 /**
  * This class echoes a string called from JavaScript.
  */
 public class PosPrinter extends CordovaPlugin {
-  boolean isConnect = false;
-  IMyBinder binder;
-  ServiceConnection conn = new ServiceConnection() {
-    @Override
-    public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-      binder = (IMyBinder) iBinder;
-    }
+  private static final String keyStatus = "status";
+  private static final String statusDisabled = "disabled";
+  private static final String statusEnabled = "enabled";
+  private static final String keyRequest = "request";
+  private static final String keyStatusReceiver = "statusReceiver";
+  private static final String keyName = "name";
+  private static final String keyAddress = "address";
+  private static final String keyBondStatus = "boodStatus";
+  private final String statusScanStarted = "scanStarted";
+  private final String statusScanStopped = "scanStopped";
+  private final String statusScanResult = "scanResult";
 
+  private static final int REQUEST_ENABLE_BT = 1;
+
+  private BluetoothAdapter bluetoothAdapter;
+  private CallbackContext initCallbackContext;
+  private CallbackContext scanCallbackContext;
+
+  private boolean isStatusReceiverRegistered;
+  private BroadcastReceiver statusReceiver = new BroadcastReceiver() {
     @Override
-    public void onServiceDisconnected(ComponentName componentName) {
+    public void onReceive(Context context, Intent intent) {
+      if (initCallbackContext == null) {
+        return;
+      }
+      if (intent.getAction().equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
+        PluginResult pluginResult;
+        JSONObject returnObj = new JSONObject();
+        switch (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR)) {
+          case BluetoothAdapter.STATE_OFF:
+            addProperty(returnObj, keyStatus, statusDisabled);
+            pluginResult = new PluginResult(PluginResult.Status.OK, returnObj);
+            pluginResult.setKeepCallback(true);
+            initCallbackContext.sendPluginResult(pluginResult);
+            break;
+          case BluetoothAdapter.STATE_ON:
+            addProperty(returnObj, keyStatus, statusEnabled);
+            pluginResult = new PluginResult(PluginResult.Status.OK, returnObj);
+            pluginResult.setKeepCallback(true);
+            initCallbackContext.sendPluginResult(pluginResult);
+            break;
+        }
+      }
     }
   };
-  BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-  CallbackContext scanCallback = null;
-  CallbackContext enableCallback = null;
-  BroadcastReceiver bluetoothReceiver = new BroadcastReceiver() {
+
+  private final static String keyType = "type";
+  private final static String keyUuids = "Uuid";
+  BroadcastReceiver scanReceiver = new BroadcastReceiver() {
     public void onReceive(Context context, Intent intent) {
+      if(scanCallbackContext==null)
+        return;
       String action = intent.getAction();
       // When discovery finds a device
       if (BluetoothDevice.ACTION_FOUND.equals(action)) {
         // Get the BluetoothDevice object from the Intent
         JSONObject callbackJsonObject = new JSONObject();
         BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-        addProperty(callbackJsonObject, Constant.DEVICE_NAME, device.getName());
-        addProperty(callbackJsonObject, Constant.DEVICE_BLUETOOTH_ADDRESS, device.getAddress());
-        addProperty(callbackJsonObject, Constant.BOND_STATE, device.getBondState());
-        sendUpdate(scanCallback, callbackJsonObject);
-        // Logs
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-          Log.i("PosPrinter", device.getName() + "\n" + device.getAddress() + "\n" + device.getType());
-        }
+        addProperty(callbackJsonObject,keyStatus,statusScanResult);
+        addProperty(callbackJsonObject, keyName, device.getName());
+        addProperty(callbackJsonObject, keyAddress, device.getAddress());
+//        addProperty(callbackJsonObject, keyBondStatus, device.getBondState());
+//        addProperty(callbackJsonObject, keyUuids, device.getUuids());
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+//          addProperty(callbackJsonObject, keyType, device.getType());
+//          Log.i("PosPrinter", device.getName() + "\n" + device.getAddress() + "\n" + device.getType());
+//        }
+        sendUpdate(scanCallbackContext, callbackJsonObject);
+      }
+      if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)){
+        JSONObject callbackJsonObject= new JSONObject();
+        addProperty(callbackJsonObject,keyStatus,statusScanStopped);
+        scanCallbackContext.success(callbackJsonObject);
+        scanCallbackContext=null;
       }
     }
   };
 
-  @Override
-  public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-    super.onActivityResult(requestCode, resultCode, intent);
-    // Enable Bluetooth Callback
-    if (Constant.REQUEST_ENABLE_BT == requestCode) {
-      if (resultCode == Constant.RESULT_OK) {
-        enableCallback.success();
-      } else {
-        enableCallback.error(Constant.REQUEST_ENABLE_BT_FAIL);
-      }
-    }
-  }
-
-  @Override
-  public void onDestroy() {
-    super.onDestroy();
-    if (bluetoothAdapter != null)
-      cordova.getActivity().unregisterReceiver(bluetoothReceiver);
-    if (conn != null)
-      cordova.getActivity().unbindService(conn);
-  }
 
   @Override
   public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
     if (action.equals("initialize")) {
-      initialize(callbackContext);
-      return true;
-    }
-    if (action.equals("getBluetoothState")) {
-      getBluetoothState(callbackContext);
-      return true;
-    }
-    if (action.equals("enableBluetooth")) {
-      enableBluetooth(callbackContext);
-      return true;
-    }
-    if (action.equals("disableBluetooth")) {
-      disableBluetooth(callbackContext);
+      initialize(args, callbackContext);
       return true;
     }
     if (action.equals("scanBluetoothDevice")) {
-      scanBluetoothDevice(callbackContext);
-      return true;
-    }
-    if (action.equals("stopScanBluetoothDevices")) {
-      stopScanBluetoothDevices(callbackContext);
-      return true;
-    }
-    if (action.equals("connectUsb")) {
-      String usbPathName = args.getString(0);
-      connectUsb(usbPathName, callbackContext);
-      return true;
-    }
-    if (action.equals("connectBluetooth")) {
-      String address = args.getString(0);
-      connectBluetooth(address, callbackContext);
-      return true;
-    }
-    if (action.equals("connectNet")) {
-      String ip = args.getString(0);
-      int port = args.optInt(1, 9100);
-      connectNet(ip, port, callbackContext);
-      return true;
-    }
-    if (action.equals("disconnectCurrentPort")) {
-      disconnectCurrentPort(callbackContext);
-      return true;
-    }
-    if (action.equals("write")) {
-      byte[] data = new byte[args.length()];
-      for (int index = 0; index < args.length(); ++index) {
-        data[index] = (byte) args.getInt(index);
-      }
-      write(data, callbackContext);
-      return true;
-    }
-    if (action.equals("read")) {
-      read(callbackContext);
+      startScan(callbackContext);
       return true;
     }
     return false;
   }
 
-  private void initialize(final CallbackContext callbackContext) {
-    cordova.getThreadPool().execute(new Runnable() {
-      @Override
-      public void run() {
-        Intent intent = new Intent(cordova.getActivity(), PosprinterService.class);
-        Context context = cordova.getActivity().getApplicationContext();
-        context.bindService(intent, conn, Context.BIND_AUTO_CREATE);
-        if (callbackContext != null)
-          callbackContext.success();
-      }
-    });
-  }
-
-  private void getBluetoothState(CallbackContext callbackContext) {
-    if (BluetoothAdapter.STATE_ON != bluetoothAdapter.getState()) {
-      callbackContext.success(1);
-    } else {
-      callbackContext.success(0);
-    }
-  }
-
-  private void stopScanBluetoothDevices(final CallbackContext callbackContext) {
-    bluetoothAdapter.cancelDiscovery();
-    callbackContext.success();
-  }
-
-  private void enableBluetooth(final CallbackContext callbackContext) {
-    if (!bluetoothAdapter.isEnabled()) {
-      enableCallback = callbackContext;
-      Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-      cordova.getActivity().startActivityForResult(intent, Constant.REQUEST_ENABLE_BT);
-    }
-  }
-
-  private void disableBluetooth(final CallbackContext callbackContext) {
-    boolean result = bluetoothAdapter.disable();
-    if (result) {
-      callbackContext.success();
-    } else {
-      callbackContext.error(Constant.DISABLE_BLUETOOTH_FAIL);
-    }
-  }
-
-  private void scanBluetoothDevice(CallbackContext callbackContext) {
-    scanCallback = callbackContext;
-    IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-    cordova.getActivity().registerReceiver(bluetoothReceiver, filter);
-    boolean result = bluetoothAdapter.startDiscovery();
-    if (!result) {
-      callbackContext.error(Constant.SCAN_BLUETOOTHDEVICE_FAIL);
-    }
-  }
-
-  private void connectUsb(String usbPathName, final CallbackContext callbackContext) {
-    binder.connectUsbPort(cordova.getActivity().getApplicationContext(), usbPathName, new UiExecute() {
-      @Override
-      public void onsucess() {
-        isConnect = true;
-        final PluginResult pluginResult = new PluginResult(PluginResult.Status.OK);
+  private void initialize(JSONArray args, final CallbackContext callbackContext) {
+    initCallbackContext = callbackContext;
+    if (bluetoothAdapter != null) {
+      JSONObject returnObj = new JSONObject();
+      PluginResult pluginResult;
+      if (bluetoothAdapter.isEnabled()) {
+        addProperty(returnObj, keyStatus, statusEnabled);
+        pluginResult = new PluginResult(PluginResult.Status.OK, returnObj);
         pluginResult.setKeepCallback(true);
-        callbackContext.sendPluginResult(pluginResult);
-        binder.acceptdatafromprinter(new UiExecute() {
-          @Override
-          public void onsucess() {
-          }
-
-          @Override
-          public void onfailed() {
-            isConnect = false;
-            callbackContext.error(Constant.USB_DISCONNECT);
-          }
-        });
+        initCallbackContext.sendPluginResult(pluginResult);
+      } else {
+        addProperty(returnObj, keyStatus, statusDisabled);
+        pluginResult = new PluginResult(PluginResult.Status.OK, returnObj);
+        pluginResult.setKeepCallback(true);
+        initCallbackContext.sendPluginResult(pluginResult);
       }
-
-      @Override
-      public void onfailed() {
-        callbackContext.error(Constant.USB_CONNECT_FAIL);
-      }
-    });
-
-  }
-
-  private void connectBluetooth(String bluetoothAddress, final CallbackContext callbackContext) {
+      return;
+    }
+    JSONObject obj = getArgsObject(args);
+    if (obj != null && getStatusReceiver(obj)) {
+      cordova.getActivity().registerReceiver(statusReceiver, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
+      isStatusReceiverRegistered = true;
+    }
+    bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+    JSONObject returnObj = new JSONObject();
     if (bluetoothAdapter.isEnabled()) {
-      binder.connectBtPort(bluetoothAddress, new UiExecute() {
-        @Override
-        public void onsucess() {
-          isConnect = true;
-          final PluginResult pluginResult = new PluginResult(PluginResult.Status.OK);
-          pluginResult.setKeepCallback(true);
-          callbackContext.sendPluginResult(pluginResult);
-          binder.acceptdatafromprinter(new UiExecute() {
-            @Override
-            public void onsucess() {
-            }
-
-            @Override
-            public void onfailed() {
-              callbackContext.error(Constant.BLUETOOTH_DISCONNECT);
-            }
-          });
-        }
-
-        @Override
-        public void onfailed() {
-          isConnect = false;
-          callbackContext.error(Constant.BLUETOOTH_CONNECT_FAIL);
-        }
-      });
+      addProperty(returnObj, keyStatus, statusEnabled);
+      PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, returnObj);
+      pluginResult.setKeepCallback(true);
+      initCallbackContext.sendPluginResult(pluginResult);
+      return;
+    }
+    if (obj != null && getRequest(obj)) {
+      Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+      cordova.startActivityForResult(this, enableIntent, REQUEST_ENABLE_BT);
     } else {
-      callbackContext.error(Constant.REQUEST_ENABLE_BT_FAIL);
+      addProperty(returnObj, keyStatus, statusDisabled);
+      PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, returnObj);
+      pluginResult.setKeepCallback(true);
+      initCallbackContext.sendPluginResult(pluginResult);
     }
   }
 
-  private void connectNet(String ipAddress, int port, final CallbackContext callbackContext) {
-    binder.connectNetPort(ipAddress, port, new UiExecute() {
-      @Override
-      public void onsucess() {
-        isConnect = true;
-        final PluginResult pluginResult = new PluginResult(PluginResult.Status.OK);
-        pluginResult.setKeepCallback(true);
-        callbackContext.sendPluginResult(pluginResult);
-        binder.acceptdatafromprinter(new UiExecute() {
-          @Override
-          public void onsucess() {
-          }
-
-          @Override
-          public void onfailed() {
-            isConnect = false;
-            callbackContext.error(Constant.NET_DISCONNECT);
-          }
-        });
-      }
-
-      @Override
-      public void onfailed() {
-        callbackContext.error(Constant.NET_CONNECT_FAIL);
-      }
-    });
-  }
-
-  private void disconnectCurrentPort(final CallbackContext callbackContext) {
-    if (isConnect) {
-      binder.disconnectCurrentPort(new UiExecute() {
-        @Override
-        public void onsucess() {
-          callbackContext.success();
-        }
-
-        @Override
-        public void onfailed() {
-          callbackContext.error(Constant.DISCONNECT_FAIL);
-        }
-      });
-    } else {
-      callbackContext.error(Constant.NOT_CONNECT);
+  private void startScan(final CallbackContext callbackContext) {
+    if (scanCallbackContext != null) {
+      JSONObject returnObj = new JSONObject();
+      callbackContext.error(returnObj);
+      return;
     }
-
-  }
-
-  private void write(byte[] data, final CallbackContext callbackContext) {
-    if (isConnect) {
-      binder.write(data, new UiExecute() {
-        @Override
-        public void onsucess() {
-          callbackContext.success();
-        }
-
-        @Override
-        public void onfailed() {
-          callbackContext.error(Constant.WRITE_FAIL);
-        }
-      });
-    } else {
-      callbackContext.error(Constant.NOT_CONNECT);
+    scanCallbackContext = callbackContext;
+    IntentFilter intentFilter= new IntentFilter();
+    intentFilter.addAction(BluetoothDevice.ACTION_FOUND);
+    //intentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+    cordova.getActivity().registerReceiver(scanReceiver, intentFilter);
+    boolean result = bluetoothAdapter.startDiscovery();
+    if (result) {
+      JSONObject returnObj= new JSONObject();
+      addProperty(returnObj,keyStatus,statusScanStarted);
+      sendUpdate(callbackContext,returnObj);
+    }else {
+      callbackContext.error(1);
     }
   }
 
-  private void read(CallbackContext callbackContext) {
-    RoundQueue<byte[]> readBuffer = binder.readBuffer();
-    byte[] data = readBuffer.getLast();
-    String res = Arrays.toString(data);
-    Log.i("PosPrinter", "data=" + res);
-    callbackContext.success(res);
+  private void stopScan(final CallbackContext callbackContext) {
+    scanCallbackContext = null;
+    bluetoothAdapter.cancelDiscovery();
   }
 
+  @Override
+  public void onDestroy() {
+    super.onDestroy();
+    if (isStatusReceiverRegistered) {
+      cordova.getActivity().unregisterReceiver(statusReceiver);
+    }
+  }
 
   /**
    * Create a new plugin result and send it back to JavaScript
@@ -351,6 +204,25 @@ public class PosPrinter extends CordovaPlugin {
       result.setKeepCallback(true);
       callbackContext.sendPluginResult(result);
     }
+  }
+
+  private JSONObject getArgsObject(JSONArray args) {
+    if (args.length() == 1) {
+      try {
+        return args.getJSONObject(0);
+      } catch (JSONException ex) {
+      }
+    }
+
+    return null;
+  }
+
+  private boolean getRequest(JSONObject obj) {
+    return obj.optBoolean(keyRequest, false);
+  }
+
+  private boolean getStatusReceiver(JSONObject obj) {
+    return obj.optBoolean(keyStatusReceiver, true);
   }
 
   //General Helpers
