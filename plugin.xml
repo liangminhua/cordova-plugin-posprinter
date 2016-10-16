@@ -10,27 +10,12 @@
         <param name="android-package" value="cordova.plugin.posprinter.PosPrinter" />
       </feature>
     </config-file>
-    <config-file parent="/manifest/application" target="AndroidManifest.xml">
-      <service android:name="net.posprinter.service.PosprinterService"></service>
-    </config-file>
     <config-file parent="/*" target="AndroidManifest.xml">
-      <uses-permission android:name="android.hardware.usb.UsbAccessory" />
-      <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-      <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
       <uses-permission android:name="android.permission.BLUETOOTH" />
       <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-      <uses-permission android:name="android.permission.BLUETOOTH_PRIVILEGED" />
-      <uses-permission android:name="android.permission.INTERNET" />
-      <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-      <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
-      <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-      <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
-      <uses-feature android:required="true" android:name="android.hardware.usb.host" />
     </config-file>
     <config-file parent="/*" target="AndroidManifest.xml"></config-file>
     <source-file src="src/android/PosPrinter.java" target-dir="src/cordova/plugin/posprinter" />
-    <source-file src="src/android/Constant.java" target-dir="src/cordova/plugin/posprinter" />
-    <source-file src="src/android/posprinterconnectandsendsdk.jar" target-dir="libs" />
   </platform>
   <platform name="ios">
     <config-file parent="/*" target="config.xml">

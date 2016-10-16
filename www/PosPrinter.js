@@ -15,8 +15,8 @@ exports.connectBluetooth = function (arg0, success, error) {
 exports.connectNet = function (arg0, arg1, success, error) {
     exec(success, error, PluginName, "connectNet", [arg0, arg1]);
 };
-exports.stopScanBluetoothDevices = function (success) {
-    exec(success, success, PluginName, "stopScanBluetoothDevices", []);
+exports.stopScanBluetoothDevices = function (success, error) {
+    exec(success, error, PluginName, "stopScanBluetoothDevices", []);
 };
 // only ios 
 exports.disconnectNetPort = function (success, error) {
@@ -45,7 +45,7 @@ exports.disconnectCurrentPort = function (success, error) {
     exec(success, error, PluginName, "disconnectCurrentPort", []);
 };
 exports.write = function (arg0, success, error) {
-    exec(success, error, PluginName, "write", arg0);
+    exec(success, error, PluginName, "write", [arg0]);
 };
 exports.read = function (success, error) {
     exec(success, error, PluginName, "read", []);
