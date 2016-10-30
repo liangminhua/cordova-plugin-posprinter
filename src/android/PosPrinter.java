@@ -23,6 +23,12 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.net.UnknownHostException;
 import java.util.UUID;
 
 /**
@@ -89,8 +95,11 @@ public class PosPrinter extends CordovaPlugin {
   private BluetoothDevice bluetoothDevice;
   private BluetoothSocket bluetoothSocket;
 
+  private Socket socket = new Socket();
+
   private CallbackContext initCallbackContext;
   private CallbackContext scanCallbackContext;
+  private CallbackContext connectCallbackContext;
 
   private boolean isStatusReceiverRegistered;
   private BroadcastReceiver statusReceiver = new BroadcastReceiver() {
@@ -145,22 +154,30 @@ public class PosPrinter extends CordovaPlugin {
   private BroadcastReceiver connectReceiver = new BroadcastReceiver() {
     @Override
     public void onReceive(Context context, Intent intent) {
+      if (connectCallbackContext == null)
+        return;
       String action = intent.getAction();
       JSONObject returnObj = new JSONObject();
-      if (BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED.equals(action)) {
-        switch (intent.getIntExtra(BluetoothAdapter.EXTRA_CONNECTION_STATE, BluetoothAdapter.ERROR)) {
-          case BluetoothAdapter.STATE_CONNECTED:
-            Log.i("PosPrinter", "onReceive: connected");
-            break;
-          case BluetoothAdapter.STATE_DISCONNECTED:
-            Log.i("PosPrinter", "onReceive: disconnected");
-            addProperty(returnObj, keyError, errorIsDisconnected);
-            addProperty(returnObj, keyMessage, logIsDisconnected);
-            break;
-        }
+      if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
+        BluetoothDevice bluetoothDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+        addDevice(returnObj, bluetoothDevice);
+        addProperty(returnObj, keyStatus, statusConnected);
+        sendUpdate(connectCallbackContext, returnObj);
+      } else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
+        BluetoothDevice bluetoothDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+        addDevice(returnObj, bluetoothDevice);
+        addProperty(returnObj, keyStatus, statusDisconnected);
+        connectCallbackContext.error(returnObj);
       }
     }
   };
+  @Override
+  public void onDestroy() {
+    super.onDestroy();
+    if (isStatusReceiverRegistered) {
+      cordova.getActivity().unregisterReceiver(statusReceiver);
+    }
+  }
 
   @Override
   public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -168,19 +185,19 @@ public class PosPrinter extends CordovaPlugin {
       initialize(args, callbackContext);
       return true;
     }
-    if (action.equals("enableBluetooth")) {
+    if (action.equals("enable")) {
       enable(callbackContext);
       return true;
     }
-    if (action.equals("disableBluetooth")) {
+    if (action.equals("disable")) {
       disbale(callbackContext);
       return true;
     }
-    if (action.equals("scanBluetoothDevice")) {
+    if (action.equals("startScan")) {
       startScan(callbackContext);
       return true;
     }
-    if (action.equals("stopScanBluetoothDevices")) {
+    if (action.equals("stopScan")) {
       stopScan(callbackContext);
       return true;
     }
@@ -188,12 +205,24 @@ public class PosPrinter extends CordovaPlugin {
       connect(args, callbackContext);
       return true;
     }
-    if (action.equals("disconnectCurrentPort")) {
+    if (action.equals("disconnectBluetooth")) {
       disconnect(callbackContext);
       return true;
     }
-    if (action.equals("write")) {
+    if (action.equals("writeToBluetooth")) {
       write(args, callbackContext);
+      return true;
+    }
+    if (action.equals("connectNet")) {
+      connectNet(args, callbackContext);
+      return true;
+    }
+    if (action.equals("disconnectNet")) {
+      disconnectNet(args, callbackContext);
+      return true;
+    }
+    if (action.equals("writeToNet")) {
+      writeToNet(args, callbackContext);
       return true;
     }
     return false;
@@ -364,11 +393,14 @@ public class PosPrinter extends CordovaPlugin {
       callbackContext.error(returnObj);
       return;
     }
+    connectCallbackContext = callbackContext;
+    IntentFilter intentFilter = new IntentFilter();
+    intentFilter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
+    intentFilter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+    cordova.getActivity().registerReceiver(connectReceiver, intentFilter);
     try {
       bluetoothSocket = bluetoothDevice.createRfcommSocketToServiceRecord(SPP_UUID);
       bluetoothSocket.connect();
-      addProperty(returnObj, keyStatus, statusConnected);
-      callbackContext.success(returnObj);
     } catch (IOException e) {
       e.printStackTrace();
       addProperty(returnObj, keyError, errorConnect);
@@ -431,6 +463,27 @@ public class PosPrinter extends CordovaPlugin {
     }
   }
 
+  private void connectNet(JSONArray args, final CallbackContext callbackContext) {
+    try {
+      InetAddress address = InetAddress.getByName("baidu.com");
+      SocketAddress socketAddress = new InetSocketAddress(address, 80);
+      socket.connect(socketAddress);
+      callbackContext.success(1);
+    } catch (UnknownHostException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+  }
+
+  private void disconnectNet(JSONArray args, final CallbackContext callbackContext) {
+
+  }
+
+  private void writeToNet(JSONArray args, final CallbackContext callbackContext) {
+
+  }
 
   private void addPropertyBytes(JSONObject returnObj, String keyValue, byte[] bytes) {
     String string = Base64.encodeToString(bytes, Base64.NO_WRAP);
@@ -452,7 +505,7 @@ public class PosPrinter extends CordovaPlugin {
 
     return bytes;
   }
-  
+
   private boolean isConnected(CallbackContext callbackContext) {
     if (bluetoothSocket != null && bluetoothSocket.isConnected()) {
       JSONObject returnObj = new JSONObject();
@@ -466,38 +519,17 @@ public class PosPrinter extends CordovaPlugin {
   }
 
   private boolean isDisConnected(CallbackContext callbackContext) {
-    if (bluetoothSocket == null || bluetoothSocket.isConnected()) {
+    if (bluetoothSocket != null && bluetoothSocket.isConnected()) {
       return false;
     }
     JSONObject returnObj = new JSONObject();
 
     addProperty(returnObj, keyError, errorIsDisconnected);
     addProperty(returnObj, keyMessage, logIsDisconnected);
-
-    addDevice(returnObj, bluetoothDevice);
+    if (bluetoothDevice != null)
+      addDevice(returnObj, bluetoothDevice);
     callbackContext.error(returnObj);
     return true;
-  }
-
-  @Override
-  public void onDestroy() {
-    super.onDestroy();
-    if (isStatusReceiverRegistered) {
-      cordova.getActivity().unregisterReceiver(statusReceiver);
-    }
-  }
-
-  /**
-   * Create a new plugin result and send it back to JavaScript
-   *
-   * @param obj the printer info to set as navigator.connection
-   */
-  private void sendUpdate(CallbackContext callbackContext, JSONObject obj) {
-    if (callbackContext != null) {
-      PluginResult result = new PluginResult(PluginResult.Status.OK, obj);
-      result.setKeepCallback(true);
-      callbackContext.sendPluginResult(result);
-    }
   }
 
   //Helpers to Check Conditions
@@ -630,4 +662,16 @@ public class PosPrinter extends CordovaPlugin {
     }
   }
 
+  /**
+   * Create a new plugin result and send it back to JavaScript
+   *
+   * @param obj the printer info to set as navigator.connection
+   */
+  private void sendUpdate(CallbackContext callbackContext, JSONObject obj) {
+    if (callbackContext != null) {
+      PluginResult result = new PluginResult(PluginResult.Status.OK, obj);
+      result.setKeepCallback(true);
+      callbackContext.sendPluginResult(result);
+    }
+  }
 }
