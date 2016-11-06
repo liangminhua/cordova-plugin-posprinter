@@ -20,26 +20,14 @@ exports.stopScan = function (success, error) {
     exec(success, error, PluginName, "stopScan", []);
 };
 
-exports.connectBluetooth = function (success, error, args) {
-    exec(success, error, PluginName, "connectBluetooth", [args]);
+exports.connect = function (success, error, args) {
+    exec(success, error, PluginName, "connect", [args]);
 };
 
-exports.connectNet = function (success, error, args) {
-    exec(success, error, PluginName, "connectNet", [args]);
+exports.disconnect = function (success, error) {
+    exec(success, error, PluginName, "disconnect", []);
 };
 
-exports.disconnectBluetooth = function (success, error) {
-    exec(success, error, PluginName, "disconnectBluetooth", []);
-};
-
-exports.disconnectNet = function (success, error) {
-    exec(success, error, PluginName, "disconnectNet", []);
-};
-
-exports.writeToBluetooth = function (success, error, args) {
-    exec(success, error, PluginName, "writeToBluetooth", [args]);
-};
-
-exports.writeToNet = function (success, error, args) {
-    exec(success, error, PluginName, "writeToNet", [args]);
+exports.write = function (success, error, args) {
+    exec(success, error, PluginName, "write", [args]);
 };

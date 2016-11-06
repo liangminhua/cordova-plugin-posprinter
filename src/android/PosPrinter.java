@@ -95,8 +95,6 @@ public class PosPrinter extends CordovaPlugin {
   private BluetoothDevice bluetoothDevice;
   private BluetoothSocket bluetoothSocket;
 
-  private Socket socket = new Socket();
-
   private CallbackContext initCallbackContext;
   private CallbackContext scanCallbackContext;
   private CallbackContext connectCallbackContext;
@@ -128,7 +126,6 @@ public class PosPrinter extends CordovaPlugin {
       }
     }
   };
-
   private BroadcastReceiver scanReceiver = new BroadcastReceiver() {
     public void onReceive(Context context, Intent intent) {
       if (scanCallbackContext == null)
@@ -201,28 +198,16 @@ public class PosPrinter extends CordovaPlugin {
       stopScan(callbackContext);
       return true;
     }
-    if (action.equals("connectBluetooth")) {
+    if (action.equals("connect")) {
       connect(args, callbackContext);
       return true;
     }
-    if (action.equals("disconnectBluetooth")) {
+    if (action.equals("disconnect")) {
       disconnect(callbackContext);
       return true;
     }
-    if (action.equals("writeToBluetooth")) {
+    if (action.equals("write")) {
       write(args, callbackContext);
-      return true;
-    }
-    if (action.equals("connectNet")) {
-      connectNet(args, callbackContext);
-      return true;
-    }
-    if (action.equals("disconnectNet")) {
-      disconnectNet(args, callbackContext);
-      return true;
-    }
-    if (action.equals("writeToNet")) {
-      writeToNet(args, callbackContext);
       return true;
     }
     return false;
@@ -377,7 +362,7 @@ public class PosPrinter extends CordovaPlugin {
     if (isNotAddress(address, callbackContext)) {
       return;
     }
-    if (isConnected(callbackContext)) {
+    if (wasConnected(callbackContext)) {
       return;
     }
 
@@ -463,28 +448,6 @@ public class PosPrinter extends CordovaPlugin {
     }
   }
 
-  private void connectNet(JSONArray args, final CallbackContext callbackContext) {
-    try {
-      InetAddress address = InetAddress.getByName("baidu.com");
-      SocketAddress socketAddress = new InetSocketAddress(address, 80);
-      socket.connect(socketAddress);
-      callbackContext.success(1);
-    } catch (UnknownHostException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-
-  }
-
-  private void disconnectNet(JSONArray args, final CallbackContext callbackContext) {
-
-  }
-
-  private void writeToNet(JSONArray args, final CallbackContext callbackContext) {
-
-  }
-
   private void addPropertyBytes(JSONObject returnObj, String keyValue, byte[] bytes) {
     String string = Base64.encodeToString(bytes, Base64.NO_WRAP);
     addProperty(returnObj, keyValue, string);
@@ -506,13 +469,13 @@ public class PosPrinter extends CordovaPlugin {
     return bytes;
   }
 
-  private boolean isConnected(CallbackContext callbackContext) {
+  private boolean wasConnected(CallbackContext callbackContext) {
     if (bluetoothSocket != null && bluetoothSocket.isConnected()) {
       JSONObject returnObj = new JSONObject();
       addProperty(returnObj, keyError, errorConnect);
       addProperty(returnObj, keyMessage, logPreviouslyConnected);
       addDevice(returnObj, bluetoothDevice);
-      callbackContext.success(returnObj);
+      callbackContext.error(returnObj);
       return true;
     }
     return false;
@@ -649,7 +612,7 @@ public class PosPrinter extends CordovaPlugin {
   }
 
   //General Helpers
-  private void addProperty(JSONObject obj, String key, Object value) {
+ private void addProperty(JSONObject obj, String key, Object value) {
     //Believe exception only occurs when adding duplicate keys, so just ignore it
     try {
       if (value == null) {
