@@ -23,12 +23,8 @@
         <param name="ios-package" value="PosPrinter" />
       </feature>
     </config-file>
-    <header-file src="src/ios/XYWIFIManager.h" />
-    <source-file src="src/ios/XYWIFIManager.m" />
     <header-file src="src/ios/PosPrinter.h" />
     <source-file src="src/ios/PosPrinter.m" />
-    <header-file src="src/ios/AsyncSocket.h" />
-    <source-file src="src/ios/AsyncSocket.m" />
     <framework src="SystemConfiguration.framework" />
     <framework src="CFNetwork.framework" />
     <framework src="CoreBluetooth.framework" />
