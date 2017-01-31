@@ -1,5 +1,5 @@
-## cordova-plugin-posprinter ##
-   使用ESC/TSC命令在POS打印机上打印
+# cordova-plugin-posprinter (Deprecated) 
+   使用ESC/TSC命令在POS打印机上打印。这个项目已经废弃，请查看[cordova-posprinter-sample](https://github.com/liangminhua/cordova-posprinter-sample)以获得更多的帮助。
 
 ## Methods ##
 * [posprinter.initialize](#initialize)
